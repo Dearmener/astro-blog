@@ -52,7 +52,7 @@
   }
 
   .notion-content {
-    @apply max-w-[900px] mx-auto px-6 md:px-16 py-8;
+    @apply max-w-[900px] mx-auto px-6 md:px-16 py-8 relative;
   }
 
   .notion-header {

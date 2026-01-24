@@ -97,10 +97,10 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
         <div class="notion-body">
           <slot />
         </div>
+        
+        {showToc && <TableOfContents headings={headings} />}
       </div>
     </article>
-
-    {showToc && <TableOfContents headings={headings} />}
   </div>
 </BaseLayout>
 

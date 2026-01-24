@@ -43,7 +43,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     .toc-sidebar {
       display: block;
       position: fixed;
-      top: 100px;
+      top: var(--toc-top, 100px);
       right: max(calc((100vw - 900px) / 2 - 280px), 20px);
       width: 240px;
       max-height: calc(100vh - 140px);
@@ -144,11 +144,15 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 
 <script>
   function initTocHighlight() {
+    const tocSidebar = document.querySelector<HTMLElement>('.toc-sidebar');
     const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
     const headingElements: HTMLElement[] = [];
     
-    if (tocLinks.length === 0) return;
+    if (tocLinks.length === 0 || !tocSidebar) return;
 
+    // 找到正文内容的起始位置
+    const notionContent = document.querySelector<HTMLElement>('.notion-content');
+    
     tocLinks.forEach((link) => {
       const slug = link.dataset.slug;
       if (slug) {
@@ -161,9 +165,26 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 
     if (headingElements.length === 0) return;
 
+    const fixedTop = 100; // TOC 固定时距离顶部的距离
+
+    function updateTocPosition() {
+      if (!notionContent || !tocSidebar) return;
+      
+      const contentRect = notionContent.getBoundingClientRect();
+      
+      // 当 .notion-content 顶部还在视口下方时，TOC 跟随内容
+      // 当 .notion-content 顶部滚动到 fixedTop 以上时，TOC 固定
+      if (contentRect.top > fixedTop) {
+        // 内容还没滚动到位，TOC 跟随内容顶部
+        tocSidebar.style.setProperty('--toc-top', `${contentRect.top}px`);
+      } else {
+        // 内容已滚动，TOC 固定在 fixedTop
+        tocSidebar.style.setProperty('--toc-top', `${fixedTop}px`);
+      }
+    }
+
     function highlightToc() {
       const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
       
       let currentHeading: HTMLElement | null = null;
       
@@ -205,6 +226,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     window.addEventListener('scroll', () => {
       if (!ticking) {
         requestAnimationFrame(() => {
+          updateTocPosition();
           highlightToc();
           ticking = false;
         });
@@ -212,6 +234,8 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
       }
     });
 
+    // 初始化
+    updateTocPosition();
     highlightToc();
 
     tocLinks.forEach((link) => {
