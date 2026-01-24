@@ -1,0 +1,186 @@
+---
+const navLinks = [
+  { href: '/', label: '首页', icon: '🏠' },
+  { href: '/blog', label: '文章', icon: '📝' },
+  { href: '/categories', label: '分类', icon: '📁' },
+  { href: '/tags', label: '标签', icon: '🏷️' },
+  { href: '/about', label: '关于', icon: '👋' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="notion-header-bar">
+  <nav class="max-w-[900px] mx-auto px-4 md:px-6">
+    <div class="flex items-center justify-between h-11">
+      <a href="/" class="notion-logo">
+        <span class="notion-logo-icon">📚</span>
+        <span class="notion-logo-text">My Blog</span>
+      </a>
+      
+      <div class="hidden md:flex items-center gap-0.5">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              'notion-nav-link',
+              (currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))) && 'active'
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+      
+      <div class="flex items-center gap-1">
+        <button
+          id="search-btn"
+          class="notion-icon-btn"
+          aria-label="搜索"
+          title="搜索 (⌘K)"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+        
+        <button
+          id="theme-toggle"
+          class="notion-icon-btn"
+          aria-label="切换主题"
+        >
+          <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" stroke-width="2"/>
+            <path stroke-width="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+        
+        <button
+          id="mobile-menu-btn"
+          class="notion-icon-btn md:hidden"
+          aria-label="菜单"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <div id="mobile-menu" class="hidden md:hidden pb-2">
+      <div class="flex flex-col">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              'notion-mobile-link',
+              (currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))) && 'active'
+            ]}
+          >
+            <span class="mr-2">{link.icon}</span>
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .notion-header-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: var(--notion-bg);
+    border-bottom: 1px solid var(--notion-border);
+  }
+
+  .notion-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--notion-text);
+    text-decoration: none;
+  }
+
+  .notion-logo:hover {
+    opacity: 0.8;
+  }
+
+  .notion-logo-icon {
+    font-size: 1.25rem;
+  }
+
+  .notion-logo-text {
+    font-size: 0.875rem;
+  }
+
+  .notion-nav-link {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.875rem;
+    color: var(--notion-text-secondary);
+    border-radius: 0.375rem;
+    transition: background-color 0.1s, color 0.1s;
+  }
+
+  .notion-nav-link:hover {
+    background-color: var(--notion-bg-hover);
+    color: var(--notion-text);
+  }
+
+  .notion-nav-link.active {
+    background-color: var(--notion-bg-secondary);
+    color: var(--notion-text);
+  }
+
+  .notion-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--notion-text-secondary);
+    border-radius: 0.375rem;
+    transition: background-color 0.1s;
+  }
+
+  .notion-icon-btn:hover {
+    background-color: var(--notion-bg-hover);
+    color: var(--notion-text);
+  }
+
+  .notion-mobile-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--notion-text-secondary);
+    border-radius: 0.375rem;
+    transition: background-color 0.1s;
+  }
+
+  .notion-mobile-link:hover,
+  .notion-mobile-link.active {
+    background-color: var(--notion-bg-secondary);
+    color: var(--notion-text);
+  }
+</style>
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  themeToggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+  
+  mobileMenuBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>

@@ -1,0 +1,111 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  headings?: Heading[];
+}
+
+const { post, headings = [] } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, category, tags } = post.data;
+
+const formattedDate = new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+}).format(pubDate);
+
+const formattedUpdatedDate = updatedDate
+  ? new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(updatedDate)
+  : null;
+
+const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
+---
+
+<BaseLayout title={`${title} | My Blog`} description={description} image={heroImage}>
+  <div class="blog-post-layout">
+    <article class="notion-page">
+      {heroImage && (
+        <div class="notion-cover">
+          <img src={heroImage} alt={title} />
+        </div>
+      )}
+      
+      <div class="notion-content">
+        <header class="notion-header">
+          <h1 class="notion-title">{title}</h1>
+          
+          <div class="notion-properties">
+            <div class="notion-property">
+              <span class="notion-property-icon">📅</span>
+              <span class="notion-property-label">创建时间</span>
+              <time datetime={pubDate.toISOString()} class="notion-property-value">
+                {formattedDate}
+              </time>
+            </div>
+            
+            {formattedUpdatedDate && (
+              <div class="notion-property">
+                <span class="notion-property-icon">✏️</span>
+                <span class="notion-property-label">更新时间</span>
+                <span class="notion-property-value">{formattedUpdatedDate}</span>
+              </div>
+            )}
+            
+            {category && (
+              <div class="notion-property">
+                <span class="notion-property-icon">📁</span>
+                <span class="notion-property-label">分类</span>
+                <a href={`/categories/${category}`} class="notion-property-value notion-link">
+                  {category}
+                </a>
+              </div>
+            )}
+            
+            {tags && tags.length > 0 && (
+              <div class="notion-property">
+                <span class="notion-property-icon">🏷️</span>
+                <span class="notion-property-label">标签</span>
+                <div class="notion-tags">
+                  {tags.map((tag: string, index: number) => (
+                    <a href={`/tags/${tag}`} class={`notion-tag notion-tag-${index % 6}`}>
+                      {tag}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {description && (
+            <p class="notion-description">{description}</p>
+          )}
+        </header>
+        
+        <div class="notion-body">
+          <slot />
+        </div>
+      </div>
+    </article>
+
+    {showToc && <TableOfContents headings={headings} />}
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-post-layout {
+    position: relative;
+  }
+</style>

@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const recentPosts = posts.slice(0, 6);
+const categories = [...new Set(posts.map((post) => post.data.category))];
+const allTags = [...new Set(posts.flatMap((post) => post.data.tags))];
+---
+
+<BaseLayout title="首页 | My Blog">
+  <div class="notion-home">
+    <section class="notion-hero">
+      <div class="notion-hero-icon">📚</div>
+      <h1 class="notion-hero-title">Welcome to My Blog</h1>
+      <p class="notion-hero-desc">记录技术、分享生活、探索世界</p>
+    </section>
+
+    <section class="notion-section">
+      <div class="notion-section-header">
+        <span class="notion-section-icon">📝</span>
+        <h2 class="notion-section-title">最新文章</h2>
+        <a href="/blog" class="notion-section-more">
+          查看全部 →
+        </a>
+      </div>
+      
+      <div class="notion-gallery">
+        {recentPosts.map((post) => (
+          <PostCard
+            title={post.data.title}
+            description={post.data.description}
+            pubDate={post.data.pubDate}
+            heroImage={post.data.heroImage}
+            category={post.data.category}
+            tags={post.data.tags}
+            slug={post.slug}
+          />
+        ))}
+      </div>
+    </section>
+
+    <div class="notion-columns">
+      <section class="notion-column">
+        <div class="notion-section-header">
+          <span class="notion-section-icon">📁</span>
+          <h2 class="notion-section-title">分类</h2>
+        </div>
+        <div class="notion-list">
+          {categories.map((category) => (
+            <a href={`/categories/${category}`} class="notion-list-item">
+              <span class="notion-list-icon">📂</span>
+              <span class="notion-list-text">{category}</span>
+              <span class="notion-list-count">{posts.filter((p) => p.data.category === category).length}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="notion-column">
+        <div class="notion-section-header">
+          <span class="notion-section-icon">🏷️</span>
+          <h2 class="notion-section-title">标签</h2>
+        </div>
+        <div class="notion-tag-cloud">
+          {allTags.map((tag, index) => (
+            <a href={`/tags/${tag}`} class={`notion-tag notion-tag-${index % 6}`}>
+              {tag}
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .notion-home {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .notion-home {
+      padding: 2rem 4rem;
+    }
+  }
+
+  .notion-hero {
+    text-align: center;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+  }
+
+  .notion-hero-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .notion-hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--notion-text);
+    margin-bottom: 0.75rem;
+  }
+
+  .notion-hero-desc {
+    font-size: 1.125rem;
+    color: var(--notion-text-secondary);
+  }
+
+  .notion-section {
+    margin-bottom: 3rem;
+  }
+
+  .notion-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--notion-border);
+  }
+
+  .notion-section-icon {
+    font-size: 1.25rem;
+  }
+
+  .notion-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    flex: 1;
+  }
+
+  .notion-section-more {
+    font-size: 0.875rem;
+    color: var(--notion-text-secondary);
+    transition: color 0.1s;
+  }
+
+  .notion-section-more:hover {
+    color: var(--notion-link);
+  }
+
+  .notion-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .notion-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .notion-columns {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .notion-column {
+    background-color: var(--notion-bg);
+  }
+
+  .notion-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notion-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin: 0 -0.75rem;
+    border-radius: 0.375rem;
+    color: var(--notion-text);
+    transition: background-color 0.1s;
+  }
+
+  .notion-list-item:hover {
+    background-color: var(--notion-bg-hover);
+  }
+
+  .notion-list-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .notion-list-text {
+    flex: 1;
+    font-size: 0.9375rem;
+  }
+
+  .notion-list-count {
+    font-size: 0.75rem;
+    color: var(--notion-text-secondary);
+    background-color: var(--notion-bg-secondary);
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  .notion-tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

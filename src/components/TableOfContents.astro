@@ -1,0 +1,240 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+{filteredHeadings.length > 0 && (
+  <aside class="toc-sidebar">
+    <nav class="toc-container">
+      <div class="toc-header">
+        <span class="toc-icon">📑</span>
+        <span class="toc-title">目录</span>
+      </div>
+      <ul class="toc-list">
+        {filteredHeadings.map((heading) => (
+          <li class={`toc-item toc-depth-${heading.depth}`}>
+            <a href={`#${heading.slug}`} data-slug={heading.slug} class="toc-link">
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
+
+<style>
+  .toc-sidebar {
+    display: none;
+  }
+
+  @media (min-width: 1280px) {
+    .toc-sidebar {
+      display: block;
+      position: fixed;
+      top: 100px;
+      right: max(calc((100vw - 900px) / 2 - 280px), 20px);
+      width: 240px;
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      z-index: 10;
+    }
+  }
+
+  .toc-container {
+    padding: 1rem;
+    background-color: var(--notion-bg);
+    border: 1px solid var(--notion-border);
+    border-radius: 0.5rem;
+  }
+
+  .toc-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--notion-border);
+  }
+
+  .toc-icon {
+    font-size: 0.875rem;
+  }
+
+  .toc-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--notion-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-item {
+    margin: 0;
+    position: relative;
+  }
+
+  .toc-depth-2 {
+    padding-left: 0;
+  }
+
+  .toc-depth-3 {
+    padding-left: 0.75rem;
+  }
+
+  .toc-link {
+    display: block;
+    padding: 0.375rem 0.5rem;
+    margin: 0.125rem -0.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--notion-text-secondary);
+    border-radius: 0.25rem;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+
+  .toc-link:hover {
+    color: var(--notion-text);
+    background-color: var(--notion-bg-hover);
+  }
+
+  .toc-link.active {
+    color: var(--notion-text);
+    background-color: var(--notion-bg-secondary);
+    border-left-color: #2eaadc;
+    font-weight: 500;
+  }
+
+  :global(.dark) .toc-link.active {
+    border-left-color: #529cca;
+  }
+
+  .toc-sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .toc-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .toc-sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--notion-border);
+    border-radius: 2px;
+  }
+</style>
+
+<script>
+  function initTocHighlight() {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
+    const headingElements: HTMLElement[] = [];
+    
+    if (tocLinks.length === 0) return;
+
+    tocLinks.forEach((link) => {
+      const slug = link.dataset.slug;
+      if (slug) {
+        const heading = document.getElementById(slug);
+        if (heading) {
+          headingElements.push(heading);
+        }
+      }
+    });
+
+    if (headingElements.length === 0) return;
+
+    function highlightToc() {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      
+      let currentHeading: HTMLElement | null = null;
+      
+      for (const heading of headingElements) {
+        const rect = heading.getBoundingClientRect();
+        const headingTop = rect.top + scrollTop;
+        
+        if (headingTop <= scrollTop + 120) {
+          currentHeading = heading;
+        }
+      }
+
+      if (!currentHeading && headingElements.length > 0) {
+        const firstHeadingTop = headingElements[0].getBoundingClientRect().top + scrollTop;
+        if (scrollTop < firstHeadingTop) {
+          currentHeading = headingElements[0];
+        }
+      }
+
+      tocLinks.forEach((link) => {
+        link.classList.remove('active');
+        if (currentHeading && link.dataset.slug === currentHeading.id) {
+          link.classList.add('active');
+          
+          const sidebar = document.querySelector('.toc-sidebar');
+          if (sidebar) {
+            const linkRect = link.getBoundingClientRect();
+            const sidebarRect = sidebar.getBoundingClientRect();
+            
+            if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+              link.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }
+          }
+        }
+      });
+    }
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          highlightToc();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    highlightToc();
+
+    tocLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const slug = link.dataset.slug;
+        if (slug) {
+          const target = document.getElementById(slug);
+          if (target) {
+            const offsetTop = target.getBoundingClientRect().top + window.scrollY - 80;
+            window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+            history.pushState(null, '', `#${slug}`);
+          }
+        }
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTocHighlight);
+  } else {
+    initTocHighlight();
+  }
+
+  document.addEventListener('astro:page-load', initTocHighlight);
+</script>

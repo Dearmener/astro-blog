@@ -1,0 +1,296 @@
+---
+
+---
+
+<div id="search-modal" class="notion-modal hidden">
+  <div class="notion-modal-overlay" id="search-overlay"></div>
+  
+  <div class="notion-modal-container">
+    <div class="notion-search-box">
+      <div class="notion-search-header">
+        <svg class="notion-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          class="notion-search-input"
+          placeholder="搜索文章..."
+          autocomplete="off"
+        />
+        <kbd class="notion-kbd">ESC</kbd>
+      </div>
+      
+      <div id="search-results" class="notion-search-results">
+        <div class="notion-search-empty">
+          <span>🔍</span>
+          <p>输入关键词搜索</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .notion-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+  }
+
+  .notion-modal.hidden {
+    display: none;
+  }
+
+  .notion-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(15, 15, 15, 0.6);
+  }
+
+  .notion-modal-container {
+    position: relative;
+    max-width: 600px;
+    margin: 10vh auto 0;
+    padding: 0 1rem;
+  }
+
+  .notion-search-box {
+    background-color: var(--notion-bg);
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0 1px var(--notion-border), 0 20px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+
+  :global(.dark) .notion-search-box {
+    box-shadow: 0 0 0 1px var(--notion-border), 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .notion-search-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--notion-border);
+  }
+
+  .notion-search-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--notion-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .notion-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--notion-text);
+  }
+
+  .notion-search-input::placeholder {
+    color: var(--notion-text-secondary);
+  }
+
+  .notion-kbd {
+    display: none;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    font-family: inherit;
+    color: var(--notion-text-secondary);
+    background-color: var(--notion-bg-secondary);
+    border: 1px solid var(--notion-border);
+    border-radius: 0.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .notion-kbd {
+      display: inline-block;
+    }
+  }
+
+  .notion-search-results {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .notion-search-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 3rem 1rem;
+    color: var(--notion-text-secondary);
+  }
+
+  .notion-search-empty span {
+    font-size: 2rem;
+  }
+</style>
+
+<script>
+  import Fuse from 'fuse.js';
+
+  interface Post {
+    title: string;
+    description: string;
+    slug: string;
+    category: string;
+    tags: string[];
+  }
+
+  let fuse: Fuse<Post> | null = null;
+  let posts: Post[] = [];
+
+  async function initSearch() {
+    if (posts.length > 0) return;
+
+    try {
+      const response = await fetch('/api/search.json');
+      posts = await response.json();
+      
+      fuse = new Fuse(posts, {
+        keys: ['title', 'description', 'category', 'tags'],
+        threshold: 0.3,
+        includeScore: true,
+      });
+    } catch (error) {
+      console.error('Failed to load search data:', error);
+    }
+  }
+
+  function search(query: string): Post[] {
+    if (!fuse || !query.trim()) return [];
+    return fuse.search(query).map(result => result.item);
+  }
+
+  function renderResults(results: Post[]) {
+    const container = document.getElementById('search-results');
+    if (!container) return;
+
+    if (results.length === 0) {
+      container.innerHTML = `
+        <div class="notion-search-empty">
+          <span>😕</span>
+          <p>未找到相关文章</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = results
+      .map(
+        (post) => `
+        <a href="/blog/${post.slug}" class="notion-search-item">
+          <span class="notion-search-item-icon">📄</span>
+          <div class="notion-search-item-content">
+            <div class="notion-search-item-title">${post.title}</div>
+            <div class="notion-search-item-meta">${post.category}</div>
+          </div>
+        </a>
+      `
+      )
+      .join('');
+  }
+
+  function openModal() {
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    
+    modal?.classList.remove('hidden');
+    input?.focus();
+    document.body.style.overflow = 'hidden';
+    initSearch();
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const resultsContainer = document.getElementById('search-results');
+    
+    modal?.classList.add('hidden');
+    document.body.style.overflow = '';
+    
+    if (input) input.value = '';
+    if (resultsContainer) {
+      resultsContainer.innerHTML = `
+        <div class="notion-search-empty">
+          <span>🔍</span>
+          <p>输入关键词搜索</p>
+        </div>
+      `;
+    }
+  }
+
+  document.getElementById('search-btn')?.addEventListener('click', openModal);
+  document.getElementById('search-overlay')?.addEventListener('click', closeModal);
+
+  document.getElementById('search-input')?.addEventListener('input', (e) => {
+    const query = (e.target as HTMLInputElement).value;
+    const results = search(query);
+    
+    if (!query.trim()) {
+      document.getElementById('search-results')!.innerHTML = `
+        <div class="notion-search-empty">
+          <span>🔍</span>
+          <p>输入关键词搜索</p>
+        </div>
+      `;
+      return;
+    }
+    
+    renderResults(results);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      openModal();
+    }
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+</script>
+
+<style is:global>
+  .notion-search-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    transition: background-color 0.1s;
+    text-decoration: none;
+  }
+
+  .notion-search-item:hover {
+    background-color: var(--notion-bg-hover);
+  }
+
+  .notion-search-item-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  .notion-search-item-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notion-search-item-title {
+    font-size: 0.9375rem;
+    color: var(--notion-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .notion-search-item-meta {
+    font-size: 0.75rem;
+    color: var(--notion-text-secondary);
+    margin-top: 0.125rem;
+  }
+</style>
