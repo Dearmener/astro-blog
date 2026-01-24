@@ -1,0 +1,213 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  series: string;
+  currentSlug: string;
+  posts: CollectionEntry<'blog'>[];
+}
+
+const { series, currentSlug, posts } = Astro.props;
+
+const seriesPosts = posts
+  .filter((post) => post.data.series === series)
+  .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0));
+
+const currentIndex = seriesPosts.findIndex((post) => post.slug === currentSlug);
+---
+
+{seriesPosts.length > 1 && (
+  <aside class="series-nav">
+    <div class="series-header">
+      <span class="series-icon">📚</span>
+      <div class="series-info">
+        <span class="series-label">系列教程</span>
+        <h3 class="series-title">{series}</h3>
+      </div>
+    </div>
+    
+    <div class="series-progress">
+      <div class="progress-bar">
+        <div class="progress-fill" style={`width: ${((currentIndex + 1) / seriesPosts.length) * 100}%`}></div>
+      </div>
+      <span class="progress-text">{currentIndex + 1} / {seriesPosts.length}</span>
+    </div>
+    
+    <nav class="series-list">
+      {seriesPosts.map((post, index) => (
+        <a
+          href={`/blog/${post.slug}`}
+          class={`series-item ${post.slug === currentSlug ? 'active' : ''}`}
+        >
+          <span class="series-item-number">{index + 1}</span>
+          <span class="series-item-title">{post.data.title}</span>
+          {post.slug === currentSlug && <span class="series-item-current">当前</span>}
+        </a>
+      ))}
+    </nav>
+  </aside>
+)}
+
+<style>
+  .series-nav {
+    display: none;
+  }
+
+  @media (min-width: 1280px) {
+    .series-nav {
+      display: block;
+      position: fixed;
+      top: 100px;
+      left: max(calc((100vw - 900px) / 2 - 300px), 20px);
+      width: 260px;
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      background-color: var(--notion-bg);
+      border: 1px solid var(--notion-border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      z-index: 10;
+    }
+  }
+
+  .series-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--notion-border);
+  }
+
+  .series-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .series-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .series-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--notion-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .series-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    margin: 0.25rem 0 0 0;
+    line-height: 1.3;
+  }
+
+  .series-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background-color: var(--notion-bg-secondary);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background-color: #2eaadc;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 0.75rem;
+    color: var(--notion-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .series-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .series-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.625rem;
+    margin: 0 -0.625rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    color: var(--notion-text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    transition: all 0.15s ease;
+  }
+
+  .series-item:hover {
+    background-color: var(--notion-bg-hover);
+    color: var(--notion-text);
+  }
+
+  .series-item.active {
+    background-color: var(--notion-bg-secondary);
+    color: var(--notion-text);
+  }
+
+  .series-item-number {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: var(--notion-bg-secondary);
+    border-radius: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .series-item.active .series-item-number {
+    background-color: #2eaadc;
+    color: white;
+  }
+
+  .series-item-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .series-item-current {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+    background-color: #2eaadc;
+    color: white;
+    border-radius: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .series-nav::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .series-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .series-nav::-webkit-scrollbar-thumb {
+    background-color: var(--notion-border);
+    border-radius: 2px;
+  }
+</style>

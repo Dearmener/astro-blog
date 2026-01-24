@@ -1,0 +1,231 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  
+  const seriesMap = new Map<string, typeof posts>();
+  
+  posts.forEach((post) => {
+    if (post.data.series) {
+      const existing = seriesMap.get(post.data.series) || [];
+      existing.push(post);
+      seriesMap.set(post.data.series, existing);
+    }
+  });
+
+  return Array.from(seriesMap.entries()).map(([series, seriesPosts]) => ({
+    params: { series },
+    props: {
+      series,
+      posts: seriesPosts.sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0)),
+    },
+  }));
+}
+
+interface Props {
+  series: string;
+  posts: Awaited<ReturnType<typeof getCollection<'blog'>>>;
+}
+
+const { series, posts } = Astro.props;
+---
+
+<BaseLayout title={`${series} | 系列教程`} description={`${series} 系列教程，共 ${posts.length} 篇文章`}>
+  <main class="series-page">
+    <div class="series-container">
+      <header class="series-header">
+        <a href="/blog" class="back-link">← 返回博客</a>
+        <div class="series-title-wrapper">
+          <span class="series-icon">📚</span>
+          <div>
+            <span class="series-label">系列教程</span>
+            <h1 class="series-title">{series}</h1>
+          </div>
+        </div>
+        <p class="series-description">共 {posts.length} 篇文章</p>
+      </header>
+
+      <div class="series-timeline">
+        {posts.map((post, index) => (
+          <a href={`/blog/${post.slug}`} class="timeline-item">
+            <div class="timeline-marker">
+              <span class="timeline-number">{index + 1}</span>
+              {index < posts.length - 1 && <div class="timeline-line"></div>}
+            </div>
+            <div class="timeline-content">
+              <h2 class="timeline-title">{post.data.title}</h2>
+              {post.data.description && (
+                <p class="timeline-description">{post.data.description}</p>
+              )}
+              <div class="timeline-meta">
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {new Intl.DateTimeFormat('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  }).format(post.data.pubDate)}
+                </time>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .series-page {
+    min-height: calc(100vh - 64px);
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .series-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .series-header {
+    margin-bottom: 3rem;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--notion-text-secondary);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s ease;
+  }
+
+  .back-link:hover {
+    color: var(--notion-text);
+  }
+
+  .series-title-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .series-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  .series-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--notion-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .series-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--notion-text);
+    margin: 0.25rem 0 0 0;
+    line-height: 1.2;
+  }
+
+  .series-description {
+    color: var(--notion-text-secondary);
+    font-size: 1rem;
+    margin: 0;
+    margin-left: 3.5rem;
+  }
+
+  .series-timeline {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 1.5rem;
+    text-decoration: none;
+    padding: 1.25rem;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .timeline-item:hover {
+    background-color: var(--notion-bg-secondary);
+  }
+
+  .timeline-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .timeline-number {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--notion-bg-secondary);
+    border: 2px solid var(--notion-border);
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--notion-text-secondary);
+    transition: all 0.15s ease;
+  }
+
+  .timeline-item:hover .timeline-number {
+    background-color: #2eaadc;
+    border-color: #2eaadc;
+    color: white;
+  }
+
+  .timeline-line {
+    width: 2px;
+    flex: 1;
+    min-height: 2rem;
+    background-color: var(--notion-border);
+    margin-top: 0.5rem;
+  }
+
+  .timeline-content {
+    flex: 1;
+    padding-bottom: 1.5rem;
+  }
+
+  .timeline-item:last-child .timeline-content {
+    padding-bottom: 0;
+  }
+
+  .timeline-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+  }
+
+  .timeline-description {
+    font-size: 0.9375rem;
+    color: var(--notion-text-secondary);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .timeline-meta {
+    font-size: 0.8125rem;
+    color: var(--notion-text-secondary);
+  }
+</style>
