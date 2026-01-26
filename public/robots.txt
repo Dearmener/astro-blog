@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://example.com/sitemap-index.xml
+Sitemap: https://menggq.pages.dev/sitemap-index.xml

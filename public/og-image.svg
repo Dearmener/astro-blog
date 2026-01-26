@@ -1,0 +1,66 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="50%" style="stop-color:#16213e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a855f7"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="url(#purpleGradient)" opacity="0.1"/>
+  <circle cx="1100" cy="530" r="250" fill="url(#purpleGradient)" opacity="0.1"/>
+  <circle cx="900" cy="100" r="150" fill="url(#purpleGradient)" opacity="0.05"/>
+  
+  <!-- Grid pattern -->
+  <g opacity="0.03">
+    <line x1="0" y1="100" x2="1200" y2="100" stroke="#fff" stroke-width="1"/>
+    <line x1="0" y1="200" x2="1200" y2="200" stroke="#fff" stroke-width="1"/>
+    <line x1="0" y1="300" x2="1200" y2="300" stroke="#fff" stroke-width="1"/>
+    <line x1="0" y1="400" x2="1200" y2="400" stroke="#fff" stroke-width="1"/>
+    <line x1="0" y1="500" x2="1200" y2="500" stroke="#fff" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="630" stroke="#fff" stroke-width="1"/>
+    <line x1="400" y1="0" x2="400" y2="630" stroke="#fff" stroke-width="1"/>
+    <line x1="600" y1="0" x2="600" y2="630" stroke="#fff" stroke-width="1"/>
+    <line x1="800" y1="0" x2="800" y2="630" stroke="#fff" stroke-width="1"/>
+    <line x1="1000" y1="0" x2="1000" y2="630" stroke="#fff" stroke-width="1"/>
+  </g>
+  
+  <!-- Avatar circle with gradient -->
+  <circle cx="600" cy="220" r="90" fill="url(#purpleGradient)" filter="url(#glow)"/>
+  
+  <!-- Avatar text -->
+  <text x="600" y="250" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle">孟</text>
+  
+  <!-- Blog name -->
+  <text x="600" y="380" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="72" font-weight="bold" fill="url(#textGradient)" text-anchor="middle">孟国庆的博客</text>
+  
+  <!-- Tagline -->
+  <text x="600" y="450" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="28" fill="#94a3b8" text-anchor="middle">AI / 机器学习 / 深度学习 / LLM</text>
+  
+  <!-- URL -->
+  <text x="600" y="560" font-family="monospace" font-size="24" fill="#64748b" text-anchor="middle">menggq.pages.dev</text>
+  
+  <!-- Decorative lines -->
+  <rect x="400" y="480" width="400" height="2" fill="url(#purpleGradient)" opacity="0.5" rx="1"/>
+</svg>

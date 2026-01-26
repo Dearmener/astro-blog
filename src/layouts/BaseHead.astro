@@ -3,15 +3,67 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  modifiedTime?: Date;
+  author?: string;
+  tags?: string[];
 }
+
+const SITE_NAME = '孟国庆的博客';
+const SITE_URL = 'https://menggq.pages.dev';
+const DEFAULT_AUTHOR = '孟国庆';
 
 const { 
   title, 
-  description = '一个简约现代的个人博客', 
-  image = '/og-image.png' 
+  description = '孟国庆的个人技术博客，分享 AI、机器学习、深度学习、大语言模型等技术文章',
+  image = '/og-image.svg',
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  author = DEFAULT_AUTHOR,
+  tags = []
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || SITE_URL);
+const ogImageURL = new URL(image, Astro.site || SITE_URL);
+
+// JSON-LD structured data
+const jsonLd = type === 'article' ? {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": title,
+  "description": description,
+  "image": ogImageURL.toString(),
+  "author": {
+    "@type": "Person",
+    "name": author,
+    "url": SITE_URL
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": DEFAULT_AUTHOR,
+    "url": SITE_URL
+  },
+  "url": canonicalURL.toString(),
+  "datePublished": publishedTime?.toISOString(),
+  "dateModified": modifiedTime?.toISOString() || publishedTime?.toISOString(),
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": canonicalURL.toString()
+  },
+  "keywords": tags.join(', ')
+} : {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": SITE_NAME,
+  "description": description,
+  "url": SITE_URL,
+  "author": {
+    "@type": "Person",
+    "name": DEFAULT_AUTHOR
+  }
+};
 ---
 
 <!doctype html>
@@ -21,27 +73,62 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="author" content={author} />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- Keywords for SEO -->
+    <meta name="keywords" content={`AI, 人工智能, 机器学习, 深度学习, LLM, 大语言模型, GPT, Claude, ${tags.join(', ')}`} />
+    
+    <!-- Robots -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="zh_CN" />
+    
+    {type === 'article' && publishedTime && (
+      <meta property="article:published_time" content={publishedTime.toISOString()} />
+    )}
+    {type === 'article' && modifiedTime && (
+      <meta property="article:modified_time" content={modifiedTime.toISOString()} />
+    )}
+    {type === 'article' && (
+      <meta property="article:author" content={author} />
+    )}
+    {type === 'article' && tags.map(tag => (
+      <meta property="article:tag" content={tag} />
+    ))}
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     
     <!-- KaTeX CSS for math formulas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
     
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="generator" content={Astro.generator} />
-    
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL(image, Astro.site)} />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonicalURL} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={new URL(image, Astro.site)} />
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     
     <!-- Theme detection -->
     <script is:inline>

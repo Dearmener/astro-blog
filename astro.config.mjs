@@ -61,7 +61,7 @@ function rehypeImagePath() {
 }
 
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://menggq.pages.dev',
   integrations: [
     tailwind(),
     mdx(),

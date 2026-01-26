@@ -39,7 +39,15 @@ const formattedUpdatedDate = updatedDate
 const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
 ---
 
-<BaseLayout title={`${title} | 孟国庆的博客`} description={description} image={heroImage}>
+<BaseLayout 
+  title={`${title} | 孟国庆的博客`} 
+  description={description} 
+  image={heroImage}
+  type="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate}
+  tags={tags}
+>
   <div class="blog-post-layout">
     {series && (
       <SeriesNav series={series} currentSlug={post.id} posts={allPosts} />
