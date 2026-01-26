@@ -18,11 +18,7 @@ const currentPath = Astro.url.pathname;
         <span class="notion-logo-icon">
           <span class="logo-avatar">孟</span>
         </span>
-        <span class="notion-logo-text">
-          <span class="logo-name">孟国庆</span>
-          <span class="logo-divider">/</span>
-          <span class="logo-blog">博客</span>
-        </span>
+        <span class="notion-logo-text">孟国庆的博客</span>
       </a>
       
       <div class="hidden md:flex items-center gap-0.5">
@@ -144,27 +140,10 @@ const currentPath = Astro.url.pathname;
   }
 
   .notion-logo-text {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.875rem;
-  }
-
-  .logo-name {
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--notion-text);
     letter-spacing: -0.01em;
-  }
-
-  .logo-divider {
-    color: var(--notion-text-secondary);
-    opacity: 0.5;
-    font-weight: 400;
-  }
-
-  .logo-blog {
-    font-weight: 500;
-    color: var(--notion-text-secondary);
   }
 
   .notion-nav-link {
