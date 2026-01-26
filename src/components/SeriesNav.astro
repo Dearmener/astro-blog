@@ -57,7 +57,7 @@ const currentIndex = seriesPosts.findIndex((post) => post.id === currentSlug);
     .series-nav {
       display: block;
       position: fixed;
-      top: 100px;
+      top: var(--series-nav-top, 100px);
       left: max(calc((100vw - 900px) / 2 - 300px), 20px);
       width: 260px;
       max-height: calc(100vh - 140px);
@@ -211,3 +211,46 @@ const currentIndex = seriesPosts.findIndex((post) => post.id === currentSlug);
     border-radius: 2px;
   }
 </style>
+
+<script>
+  function initSeriesNavPosition() {
+    const seriesNav = document.querySelector<HTMLElement>('.series-nav');
+    if (!seriesNav) return;
+
+    const notionContent = document.querySelector<HTMLElement>('.notion-content');
+    if (!notionContent) return;
+
+    const fixedTop = 100;
+
+    function updatePosition() {
+      const contentRect = notionContent.getBoundingClientRect();
+      
+      if (contentRect.top > fixedTop) {
+        seriesNav.style.setProperty('--series-nav-top', `${contentRect.top}px`);
+      } else {
+        seriesNav.style.setProperty('--series-nav-top', `${fixedTop}px`);
+      }
+    }
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updatePosition();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    updatePosition();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSeriesNavPosition);
+  } else {
+    initSeriesNavPosition();
+  }
+
+  document.addEventListener('astro:page-load', initSeriesNavPosition);
+</script>
