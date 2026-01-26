@@ -6,24 +6,60 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { visit } from 'unist-util-visit';
 
-// 自定义 rehype 插件：转换图片路径
-// 将 ../../../public/assets/xxx.png 转换为 /assets/xxx.png
+function remarkObsidianImages() {
+  return (tree, file) => {
+    visit(tree, 'paragraph', (node, index, parent) => {
+      if (!node.children || node.children.length !== 1) return;
+      
+      const child = node.children[0];
+      if (child.type !== 'text') return;
+      
+      const match = child.value.match(/^!\[\[([^\]]+)\]\]$/);
+      if (!match) return;
+      
+      let imagePath = match[1];
+      
+      if (imagePath.includes('|')) {
+        imagePath = imagePath.split('|')[0];
+      }
+      
+      if (imagePath.startsWith('../assets/') || imagePath.startsWith('./assets/')) {
+        imagePath = '/assets/' + imagePath.replace(/^\.\.?\/assets\//, '');
+      } else if (imagePath.startsWith('assets/')) {
+        imagePath = '/assets/' + imagePath.replace(/^assets\//, '');
+      }
+      
+      parent.children[index] = {
+        type: 'paragraph',
+        children: [{
+          type: 'image',
+          url: imagePath,
+          alt: imagePath.split('/').pop()?.replace(/\.[^.]+$/, '') || '',
+        }]
+      };
+    });
+  };
+}
+
 function rehypeImagePath() {
   return (tree) => {
     visit(tree, 'element', (node) => {
       if (node.tagName === 'img' && node.properties?.src) {
         const src = node.properties.src;
-        // 匹配包含 public/assets/ 的相对路径
-        const match = src.match(/(?:\.\.\/)*public\/assets\/(.+)/);
-        if (match) {
-          node.properties.src = `/assets/${match[1]}`;
+        const publicMatch = src.match(/(?:\.\.\/)*public\/assets\/(.+)/);
+        if (publicMatch) {
+          node.properties.src = `/assets/${publicMatch[1]}`;
+          return;
+        }
+        const publicOtherMatch = src.match(/(?:\.\.\/)*public\/(.+)/);
+        if (publicOtherMatch) {
+          node.properties.src = `/${publicOtherMatch[1]}`;
         }
       }
     });
   };
 }
 
-// https://astro.build/config
 export default defineConfig({
   site: 'https://example.com',
   integrations: [
@@ -36,7 +72,7 @@ export default defineConfig({
       theme: 'github-dark',
       wrap: true,
     },
-    remarkPlugins: [remarkMath],
+    remarkPlugins: [remarkObsidianImages, remarkMath],
     rehypePlugins: [rehypeKatex, rehypeImagePath],
   },
 });

@@ -1,20 +1,28 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
+// Filter out series posts - only show standalone articles
+const posts = (await getCollection('blog', ({ data }) => !data.draft && !data.series))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const categories = [...new Set(posts.map((post) => post.data.category))];
+
+// Format date helper
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+};
 ---
 
-<BaseLayout title="全部文章 | My Blog" description="浏览所有博客文章">
+<BaseLayout title="独立文章 | My Blog" description="浏览所有独立博客文章">
   <div class="notion-page-content">
     <header class="notion-page-header">
       <div class="notion-page-icon">📝</div>
-      <h1 class="notion-page-title">全部文章</h1>
-      <p class="notion-page-desc">共 {posts.length} 篇文章</p>
+      <h1 class="notion-page-title">独立文章</h1>
+      <p class="notion-page-desc">共 {posts.length} 篇独立文章 · <a href="/series" class="series-link">查看系列文章 →</a></p>
     </header>
 
     <div class="notion-filter">
@@ -26,17 +34,38 @@ const categories = [...new Set(posts.map((post) => post.data.category))];
       ))}
     </div>
 
-    <div class="notion-gallery">
+    <div class="posts-list">
       {posts.map((post) => (
-        <PostCard
-          title={post.data.title}
-          description={post.data.description}
-          pubDate={post.data.pubDate}
-          heroImage={post.data.heroImage}
-          category={post.data.category}
-          tags={post.data.tags}
-          slug={post.slug}
-        />
+        <a href={`/blog/${post.id}`} class="post-item">
+          <div class="post-thumb">
+            {post.data.heroImage ? (
+              <img src={post.data.heroImage} alt={post.data.title} loading="lazy" />
+            ) : (
+              <div class="post-thumb-placeholder">
+                <span>{post.data.title.slice(0, 2)}</span>
+              </div>
+            )}
+          </div>
+          <div class="post-content">
+            <div class="post-header">
+              <h3 class="post-title">{post.data.title}</h3>
+              <time class="post-date" datetime={post.data.pubDate.toISOString()}>
+                {formatDate(post.data.pubDate)}
+              </time>
+            </div>
+            {post.data.description && (
+              <p class="post-desc">{post.data.description}</p>
+            )}
+            <div class="post-footer">
+              {post.data.category && (
+                <span class="post-category">{post.data.category}</span>
+              )}
+              {post.data.tags && post.data.tags.slice(0, 3).map((tag: string, i: number) => (
+                <span class={`post-tag tag-${i % 6}`}>{tag}</span>
+              ))}
+            </div>
+          </div>
+        </a>
       ))}
     </div>
 
@@ -51,15 +80,9 @@ const categories = [...new Set(posts.map((post) => post.data.category))];
 
 <style>
   .notion-page-content {
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 2rem 1rem;
-  }
-
-  @media (min-width: 768px) {
-    .notion-page-content {
-      padding: 2rem 4rem;
-    }
+    padding: 2rem 1.5rem;
   }
 
   .notion-page-header {
@@ -72,7 +95,7 @@ const categories = [...new Set(posts.map((post) => post.data.category))];
   }
 
   .notion-page-title {
-    font-size: 2.25rem;
+    font-size: 2rem;
     font-weight: 700;
     color: var(--notion-text);
     margin-bottom: 0.25rem;
@@ -81,6 +104,15 @@ const categories = [...new Set(posts.map((post) => post.data.category))];
   .notion-page-desc {
     font-size: 0.9375rem;
     color: var(--notion-text-secondary);
+  }
+
+  .series-link {
+    color: var(--notion-blue);
+    text-decoration: none;
+  }
+
+  .series-link:hover {
+    text-decoration: underline;
   }
 
   .notion-filter {
@@ -110,11 +142,141 @@ const categories = [...new Set(posts.map((post) => post.data.category))];
     color: var(--notion-text);
   }
 
-  .notion-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+  /* Posts List - same as homepage */
+  .posts-list {
+    display: flex;
+    flex-direction: column;
   }
+
+  .post-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    text-decoration: none;
+    border-bottom: 1px solid var(--notion-border);
+    transition: background-color 0.1s;
+  }
+
+  .post-item:first-child {
+    padding-top: 0;
+  }
+
+  .post-item:last-child {
+    border-bottom: none;
+  }
+
+  .post-item:hover {
+    background-color: var(--notion-bg-hover);
+    margin: 0 -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-radius: 6px;
+    border-bottom-color: transparent;
+  }
+
+  .post-thumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--notion-bg-secondary);
+  }
+
+  .post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .post-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--notion-text-secondary);
+    background: linear-gradient(135deg, var(--notion-bg-secondary) 0%, var(--notion-bg-hover) 100%);
+  }
+
+  .post-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .post-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .post-date {
+    font-size: 0.75rem;
+    color: var(--notion-text-secondary);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .post-desc {
+    font-size: 0.875rem;
+    color: var(--notion-text-secondary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: auto;
+  }
+
+  .post-category {
+    font-size: 0.6875rem;
+    color: var(--notion-text-secondary);
+    background-color: var(--notion-bg-secondary);
+    padding: 0.125rem 0.5rem;
+    border-radius: 3px;
+  }
+
+  .post-tag {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 3px;
+  }
+
+  .tag-0 { background-color: rgba(46, 170, 220, 0.15); color: #2eaadc; }
+  .tag-1 { background-color: rgba(155, 89, 182, 0.15); color: #9b59b6; }
+  .tag-2 { background-color: rgba(46, 204, 113, 0.15); color: #27ae60; }
+  .tag-3 { background-color: rgba(241, 196, 15, 0.2); color: #d4a017; }
+  .tag-4 { background-color: rgba(230, 126, 34, 0.15); color: #e67e22; }
+  .tag-5 { background-color: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+
+  :global(.dark) .tag-0 { background-color: rgba(46, 170, 220, 0.2); color: #5dbce8; }
+  :global(.dark) .tag-1 { background-color: rgba(155, 89, 182, 0.2); color: #bb8fce; }
+  :global(.dark) .tag-2 { background-color: rgba(46, 204, 113, 0.2); color: #58d68d; }
+  :global(.dark) .tag-3 { background-color: rgba(241, 196, 15, 0.2); color: #f4d03f; }
+  :global(.dark) .tag-4 { background-color: rgba(230, 126, 34, 0.2); color: #f0a556; }
+  :global(.dark) .tag-5 { background-color: rgba(231, 76, 60, 0.2); color: #f1948a; }
 
   .notion-empty {
     text-align: center;
@@ -126,5 +288,18 @@ const categories = [...new Set(posts.map((post) => post.data.category))];
     font-size: 3rem;
     display: block;
     margin-bottom: 1rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .post-thumb {
+      width: 60px;
+      height: 60px;
+    }
+
+    .post-header {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
   }
 </style>

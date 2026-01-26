@@ -13,7 +13,7 @@ const seriesPosts = posts
   .filter((post) => post.data.series === series)
   .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0));
 
-const currentIndex = seriesPosts.findIndex((post) => post.slug === currentSlug);
+const currentIndex = seriesPosts.findIndex((post) => post.id === currentSlug);
 const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : null;
 const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentIndex + 1] : null;
 ---
@@ -22,7 +22,7 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
   <nav class="series-pagination">
     <div class="pagination-container">
       {prevPost ? (
-        <a href={`/blog/${prevPost.slug}`} class="pagination-link prev">
+        <a href={`/blog/${prevPost.id}`} class="pagination-link prev">
           <span class="pagination-direction">
             <span class="pagination-arrow">←</span>
             上一篇
@@ -34,7 +34,7 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
       )}
       
       {nextPost ? (
-        <a href={`/blog/${nextPost.slug}`} class="pagination-link next">
+        <a href={`/blog/${nextPost.id}`} class="pagination-link next">
           <span class="pagination-direction">
             下一篇
             <span class="pagination-arrow">→</span>

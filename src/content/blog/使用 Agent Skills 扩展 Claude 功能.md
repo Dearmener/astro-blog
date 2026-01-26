@@ -1,10 +1,13 @@
 ---
-title: "使用 Agent Skills 扩展 Claude 功能"
+title: 使用 Agent Skills 扩展 Claude 功能
+description: 介绍如何通过 Agent Skills 扩展 Claude 智能体的功能，实现模块化能力。
 pubDate: 2026-01-15
-description: "介绍如何通过 Agent Skills 扩展 Claude 智能体的功能，实现模块化能力。"
-category: "技术"
-tags: ["Claude", "Agent Skills", "AI 扩展"]
-heroImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=400&fit=crop"
+category: 技术
+tags:
+  - Claude
+  - Agent Skills
+  - AI 扩展
+heroImage: https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=400&fit=crop
 ---
 ## Skills 是什么？
 

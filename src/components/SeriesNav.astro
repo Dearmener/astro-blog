@@ -13,7 +13,7 @@ const seriesPosts = posts
   .filter((post) => post.data.series === series)
   .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0));
 
-const currentIndex = seriesPosts.findIndex((post) => post.slug === currentSlug);
+const currentIndex = seriesPosts.findIndex((post) => post.id === currentSlug);
 ---
 
 {seriesPosts.length > 1 && (
@@ -36,12 +36,12 @@ const currentIndex = seriesPosts.findIndex((post) => post.slug === currentSlug);
     <nav class="series-list">
       {seriesPosts.map((post, index) => (
         <a
-          href={`/blog/${post.slug}`}
-          class={`series-item ${post.slug === currentSlug ? 'active' : ''}`}
+          href={`/blog/${post.id}`}
+          class={`series-item ${post.id === currentSlug ? 'active' : ''}`}
         >
           <span class="series-item-number">{index + 1}</span>
           <span class="series-item-title">{post.data.title}</span>
-          {post.slug === currentSlug && <span class="series-item-current">当前</span>}
+          {post.id === currentSlug && <span class="series-item-current">当前</span>}
         </a>
       ))}
     </nav>

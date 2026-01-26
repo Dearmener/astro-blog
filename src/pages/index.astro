@@ -89,7 +89,7 @@ const formatDate = (date: Date) => {
       
       <div class="posts-list">
         {recentPosts.map((post) => (
-          <a href={`/blog/${post.slug}`} class="post-item">
+          <a href={`/blog/${post.id}`} class="post-item">
             <div class="post-thumb">
               {post.data.heroImage ? (
                 <img src={post.data.heroImage} alt={post.data.title} loading="lazy" />

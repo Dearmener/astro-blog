@@ -49,7 +49,7 @@ const { series, posts } = Astro.props;
 
       <div class="series-timeline">
         {posts.map((post, index) => (
-          <a href={`/blog/${post.slug}`} class="timeline-item">
+          <a href={`/blog/${post.id}`} class="timeline-item">
             <div class="timeline-marker">
               <span class="timeline-number">{index + 1}</span>
               {index < posts.length - 1 && <div class="timeline-line"></div>}

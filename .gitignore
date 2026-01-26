@@ -18,6 +18,10 @@ dist/
 *.swp
 *.swo
 
+# obsidian
+.obsidian/
+**/.obsidian/
+
 # OS
 .DS_Store
 Thumbs.db

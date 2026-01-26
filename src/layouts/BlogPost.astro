@@ -42,7 +42,7 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
 <BaseLayout title={`${title} | My Blog`} description={description} image={heroImage}>
   <div class="blog-post-layout">
     {series && (
-      <SeriesNav series={series} currentSlug={post.slug} posts={allPosts} />
+      <SeriesNav series={series} currentSlug={post.id} posts={allPosts} />
     )}
     
     <article class="notion-page">
@@ -115,7 +115,7 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
         </div>
         
         {series && (
-          <SeriesPagination series={series} currentSlug={post.slug} posts={allPosts} />
+          <SeriesPagination series={series} currentSlug={post.id} posts={allPosts} />
         )}
         
         {showToc && <TableOfContents headings={headings} />}
