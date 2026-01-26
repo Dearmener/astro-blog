@@ -44,12 +44,17 @@ const formatDate = (date: Date) => {
 };
 ---
 
-<BaseLayout title="首页 | My Blog">
+<BaseLayout title="首页 | 孟国庆的博客">
   <div class="home-container">
     <!-- Hero Section -->
     <section class="hero">
-      <h1 class="hero-title">Welcome to My Blog</h1>
-      <p class="hero-desc">记录技术、分享生活、探索世界</p>
+      <div class="hero-brand">
+        <span class="hero-avatar">孟</span>
+        <div class="hero-text">
+          <h1 class="hero-title">孟国庆的博客</h1>
+          <p class="hero-desc">记录技术 · 分享生活 · 探索 AI</p>
+        </div>
+      </div>
     </section>
 
     <!-- Series Section -->
@@ -161,18 +166,49 @@ const formatDate = (date: Date) => {
     margin-bottom: 2.5rem;
   }
 
+  .hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .hero-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 700;
+    border-radius: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.25);
+  }
+
+  :global(.dark) .hero-avatar {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+  }
+
+  .hero-text {
+    flex: 1;
+  }
+
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--notion-text);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.375rem 0;
     letter-spacing: -0.02em;
   }
 
   .hero-desc {
-    font-size: 1rem;
+    font-size: 0.9375rem;
     color: var(--notion-text-secondary);
     margin: 0;
+    letter-spacing: 0.02em;
   }
 
   /* Section */
