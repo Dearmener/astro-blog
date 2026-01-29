@@ -1,0 +1,924 @@
+/* 
+ * Notion Style Theme for Obsidian
+ * Author: 孟国庆
+ * Website: https://menggq.pages.dev
+ * 
+ * A clean, minimal theme inspired by Notion's design language.
+ */
+
+/* ============================================
+   CSS Variables - Light Theme
+   ============================================ */
+.theme-light {
+  --notion-text: #37352f;
+  --notion-text-secondary: #787774;
+  --notion-bg: #ffffff;
+  --notion-bg-secondary: #f7f6f3;
+  --notion-bg-hover: #efefef;
+  --notion-border: #e9e9e7;
+  --notion-link: #2eaadc;
+  --notion-code-bg: #f7f6f3;
+  --notion-code-text: #eb5757;
+  --notion-selection: rgba(46, 170, 220, 0.15);
+  --notion-highlight: rgba(255, 212, 0, 0.4);
+  
+  /* Obsidian native spacing variables */
+  --line-height-normal: 1.6;
+  --line-height-tight: 1.3;
+  --p-spacing: 0.75rem;
+  --font-text-size: 16px;
+  
+  /* Tag colors */
+  --tag-blue-bg: rgba(46, 170, 220, 0.15);
+  --tag-blue-text: #2eaadc;
+  --tag-purple-bg: rgba(155, 89, 182, 0.15);
+  --tag-purple-text: #9b59b6;
+  --tag-green-bg: rgba(46, 204, 113, 0.15);
+  --tag-green-text: #27ae60;
+  --tag-yellow-bg: rgba(241, 196, 15, 0.2);
+  --tag-yellow-text: #d4a017;
+  --tag-orange-bg: rgba(230, 126, 34, 0.15);
+  --tag-orange-text: #e67e22;
+  --tag-red-bg: rgba(231, 76, 60, 0.15);
+  --tag-red-text: #e74c3c;
+  --tag-pink-bg: rgba(233, 30, 99, 0.15);
+  --tag-pink-text: #e91e63;
+  --tag-gray-bg: rgba(120, 119, 116, 0.15);
+  --tag-gray-text: #787774;
+  
+  /* Callout colors */
+  --callout-info-bg: rgba(46, 170, 220, 0.1);
+  --callout-info-border: #2eaadc;
+  --callout-warning-bg: rgba(241, 196, 15, 0.15);
+  --callout-warning-border: #f1c40f;
+  --callout-error-bg: rgba(231, 76, 60, 0.1);
+  --callout-error-border: #e74c3c;
+  --callout-success-bg: rgba(46, 204, 113, 0.1);
+  --callout-success-border: #2ecc71;
+}
+
+/* ============================================
+   CSS Variables - Dark Theme
+   ============================================ */
+.theme-dark {
+  --notion-text: #e6e6e5;
+  --notion-text-secondary: #9b9a97;
+  --notion-bg: #191919;
+  --notion-bg-secondary: #252525;
+  --notion-bg-hover: #2f2f2f;
+  --notion-border: #373737;
+  --notion-link: #529cca;
+  --notion-code-bg: #2f2f2f;
+  --notion-code-text: #eb5757;
+  --notion-selection: rgba(82, 156, 202, 0.25);
+  --notion-highlight: rgba(255, 212, 0, 0.25);
+  
+  --line-height-normal: 1.6;
+  --line-height-tight: 1.3;
+  --p-spacing: 0.75rem;
+  --font-text-size: 16px;
+  
+  /* Tag colors - Dark */
+  --tag-blue-bg: rgba(46, 170, 220, 0.2);
+  --tag-blue-text: #5dbce8;
+  --tag-purple-bg: rgba(155, 89, 182, 0.2);
+  --tag-purple-text: #bb8fce;
+  --tag-green-bg: rgba(46, 204, 113, 0.2);
+  --tag-green-text: #58d68d;
+  --tag-yellow-bg: rgba(241, 196, 15, 0.2);
+  --tag-yellow-text: #f4d03f;
+  --tag-orange-bg: rgba(230, 126, 34, 0.2);
+  --tag-orange-text: #f0a556;
+  --tag-red-bg: rgba(231, 76, 60, 0.2);
+  --tag-red-text: #f1948a;
+  --tag-pink-bg: rgba(233, 30, 99, 0.2);
+  --tag-pink-text: #f48fb1;
+  --tag-gray-bg: rgba(155, 154, 151, 0.2);
+  --tag-gray-text: #9b9a97;
+  
+  /* Callout colors - Dark */
+  --callout-info-bg: rgba(82, 156, 202, 0.15);
+  --callout-info-border: #529cca;
+  --callout-warning-bg: rgba(241, 196, 15, 0.15);
+  --callout-warning-border: #f1c40f;
+  --callout-error-bg: rgba(231, 76, 60, 0.15);
+  --callout-error-border: #e74c3c;
+  --callout-success-bg: rgba(46, 204, 113, 0.15);
+  --callout-success-border: #2ecc71;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+.workspace {
+  background-color: var(--notion-bg);
+}
+
+/* ============================================
+   Workspace & Layout
+   ============================================ */
+.workspace-leaf {
+  background-color: var(--notion-bg);
+}
+
+.workspace-leaf-content {
+  background-color: var(--notion-bg);
+}
+
+.view-content {
+  background-color: var(--notion-bg);
+}
+
+/* Sidebar */
+.workspace-ribbon {
+  background-color: var(--notion-bg-secondary);
+  border-right: 1px solid var(--notion-border);
+}
+
+.workspace-ribbon.mod-left {
+  border-right: 1px solid var(--notion-border);
+}
+
+.workspace-ribbon.mod-right {
+  border-left: 1px solid var(--notion-border);
+}
+
+.side-dock {
+  background-color: var(--notion-bg-secondary);
+}
+
+.side-dock-ribbon {
+  background-color: var(--notion-bg-secondary);
+}
+
+/* File Explorer */
+.nav-folder-title {
+  color: var(--notion-text);
+  font-weight: 500;
+}
+
+.nav-file-title {
+  color: var(--notion-text);
+}
+
+.nav-file-title:hover,
+.nav-folder-title:hover {
+  background-color: var(--notion-bg-hover);
+}
+
+.nav-file-title.is-active {
+  background-color: var(--notion-bg-secondary);
+  color: var(--notion-text);
+}
+
+.tree-item-self:hover {
+  background-color: var(--notion-bg-hover);
+}
+
+/* ============================================
+   Editor - Markdown Content
+   ============================================ */
+.markdown-source-view,
+.markdown-reading-view {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  color: var(--notion-text);
+}
+
+.markdown-preview-view {
+  padding: 30px 60px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.cm-s-obsidian {
+  padding: 30px 60px;
+}
+
+.cm-content {
+  padding-bottom: 50vh;
+}
+
+.cm-line {
+  line-height: 1.6 !important;
+}
+
+.markdown-source-view.mod-cm6 .cm-content > .cm-line,
+.markdown-source-view.mod-cm6 .cm-content > .cm-callout {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.markdown-source-view.mod-cm6 .cm-embed-block {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+/* Headings */
+.markdown-preview-view h1,
+.markdown-source-view .HyperMD-header-1,
+.cm-header-1 {
+  font-size: 1.875em;
+  font-weight: 700;
+  color: var(--notion-text);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.markdown-preview-view h2,
+.markdown-source-view .HyperMD-header-2,
+.cm-header-2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--notion-text);
+  margin-top: 1.25rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.markdown-preview-view h3,
+.markdown-source-view .HyperMD-header-3,
+.cm-header-3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--notion-text);
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+  line-height: 1.4;
+}
+
+.markdown-preview-view h4,
+.markdown-source-view .HyperMD-header-4,
+.cm-header-4 {
+  font-size: 1.125em;
+  font-weight: 600;
+  color: var(--notion-text);
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-preview-view h5,
+.markdown-preview-view h6 {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--notion-text);
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Paragraphs */
+.markdown-preview-view p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.markdown-rendered {
+  line-height: 1.6;
+}
+
+/* Links */
+.markdown-preview-view a,
+.cm-url,
+.external-link {
+  color: var(--notion-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.markdown-preview-view a:hover,
+.cm-url:hover,
+.external-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Internal links */
+.internal-link {
+  color: var(--notion-link);
+  text-decoration: none;
+}
+
+.internal-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   Lists
+   ============================================ */
+.markdown-preview-view ul,
+.markdown-preview-view ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-preview-view li {
+  margin-bottom: 0.1em;
+  line-height: 1.6;
+}
+
+.markdown-preview-view ul > li {
+  list-style-type: disc;
+}
+
+.markdown-preview-view ul > li > ul > li {
+  list-style-type: circle;
+}
+
+.markdown-preview-view ul > li > ul > li > ul > li {
+  list-style-type: square;
+}
+
+/* Task lists */
+.markdown-preview-view .task-list-item-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  border: 1.5px solid var(--notion-text-secondary);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.markdown-preview-view .task-list-item-checkbox:checked {
+  background-color: var(--notion-link);
+  border-color: var(--notion-link);
+}
+
+.markdown-preview-view .task-list-item.is-checked {
+  color: var(--notion-text-secondary);
+  text-decoration: line-through;
+}
+
+/* ============================================
+   Blockquotes
+   ============================================ */
+.markdown-preview-view blockquote {
+  border-left: 3px solid var(--notion-border);
+  padding: 0.5em 1em;
+  margin: 0.75rem 0;
+  background-color: var(--notion-bg-secondary);
+  color: var(--notion-text);
+  border-radius: 0 4px 4px 0;
+  line-height: 1.6;
+}
+
+.markdown-preview-view blockquote p {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   Code Blocks
+   ============================================ */
+
+/* Inline code */
+.markdown-preview-view code:not(pre code),
+.cm-inline-code {
+  background-color: var(--notion-code-bg);
+  color: var(--notion-code-text);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace;
+}
+
+/* Code blocks */
+.markdown-preview-view pre {
+  background-color: var(--notion-code-bg);
+  border-radius: 6px;
+  padding: 1em;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  line-height: 1.5;
+}
+
+.markdown-preview-view pre code {
+  background: none;
+  color: var(--notion-text);
+  padding: 0;
+  font-size: 0.875em;
+  line-height: 1.6;
+  font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace;
+}
+
+/* Code mirror styles */
+.HyperMD-codeblock {
+  background-color: var(--notion-code-bg) !important;
+  line-height: 1.6;
+}
+
+.cm-s-obsidian .HyperMD-codeblock {
+  color: var(--notion-text);
+}
+
+/* ============================================
+   Tables
+   ============================================ */
+.markdown-preview-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9em;
+}
+
+.markdown-preview-view th,
+.markdown-preview-view td {
+  border: 1px solid var(--notion-border);
+  padding: 0.5em 1em;
+  text-align: left;
+}
+
+.markdown-preview-view th {
+  background-color: var(--notion-bg-secondary);
+  font-weight: 600;
+  color: var(--notion-text);
+}
+
+.markdown-preview-view tr:hover {
+  background-color: var(--notion-bg-hover);
+}
+
+/* ============================================
+   Horizontal Rule
+   ============================================ */
+.markdown-preview-view hr {
+  border: none;
+  border-top: 1px solid var(--notion-border);
+  margin: 2em 0;
+}
+
+/* ============================================
+   Images
+   ============================================ */
+.markdown-preview-view img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 1em 0;
+}
+
+/* ============================================
+   Callouts
+   ============================================ */
+.callout {
+  border-radius: 6px;
+  padding: 1em;
+  margin: 1em 0;
+  border-left: 4px solid;
+}
+
+.callout[data-callout="info"],
+.callout[data-callout="note"] {
+  background-color: var(--callout-info-bg);
+  border-color: var(--callout-info-border);
+}
+
+.callout[data-callout="warning"],
+.callout[data-callout="caution"] {
+  background-color: var(--callout-warning-bg);
+  border-color: var(--callout-warning-border);
+}
+
+.callout[data-callout="danger"],
+.callout[data-callout="error"] {
+  background-color: var(--callout-error-bg);
+  border-color: var(--callout-error-border);
+}
+
+.callout[data-callout="success"],
+.callout[data-callout="tip"] {
+  background-color: var(--callout-success-bg);
+  border-color: var(--callout-success-border);
+}
+
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.callout-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   Tags
+   ============================================ */
+.tag {
+  background-color: var(--tag-gray-bg);
+  color: var(--tag-gray-text);
+  padding: 0.1em 0.5em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+a.tag:hover {
+  background-color: var(--notion-bg-hover);
+  text-decoration: none;
+}
+
+/* ============================================
+   Embeds & Transclusions
+   ============================================ */
+.markdown-embed {
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  padding: 1em;
+  margin: 1em 0;
+  background-color: var(--notion-bg-secondary);
+}
+
+.markdown-embed-title {
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  color: var(--notion-text);
+}
+
+/* ============================================
+   Search & Modals
+   ============================================ */
+.modal {
+  background-color: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+  color: var(--notion-text);
+  font-weight: 600;
+}
+
+.suggestion-container {
+  background-color: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+}
+
+.suggestion-item {
+  color: var(--notion-text);
+}
+
+.suggestion-item:hover,
+.suggestion-item.is-selected {
+  background-color: var(--notion-bg-hover);
+}
+
+/* Quick Switcher */
+.prompt {
+  background-color: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+}
+
+.prompt-input {
+  background-color: var(--notion-bg);
+  color: var(--notion-text);
+  border: 1px solid var(--notion-border);
+  border-radius: 4px;
+}
+
+.prompt-results {
+  background-color: var(--notion-bg);
+}
+
+.prompt-results .suggestion-item {
+  background-color: transparent;
+}
+
+.prompt-results .suggestion-item.is-selected {
+  background-color: var(--notion-bg-hover);
+}
+
+/* ============================================
+   Settings
+   ============================================ */
+.modal.mod-settings {
+  background-color: var(--notion-bg);
+}
+
+.setting-item {
+  border-top: 1px solid var(--notion-border);
+  padding: 1em 0;
+}
+
+.setting-item-name {
+  color: var(--notion-text);
+  font-weight: 500;
+}
+
+.setting-item-description {
+  color: var(--notion-text-secondary);
+  font-size: 0.9em;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+button {
+  background-color: var(--notion-bg-secondary);
+  color: var(--notion-text);
+  border: 1px solid var(--notion-border);
+  border-radius: 4px;
+  padding: 0.5em 1em;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.15s ease;
+}
+
+button:hover {
+  background-color: var(--notion-bg-hover);
+}
+
+button.mod-cta {
+  background-color: var(--notion-link);
+  color: white;
+  border: none;
+}
+
+button.mod-cta:hover {
+  opacity: 0.9;
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
+input[type="text"],
+input[type="search"],
+textarea {
+  background-color: var(--notion-bg);
+  color: var(--notion-text);
+  border: 1px solid var(--notion-border);
+  border-radius: 4px;
+  padding: 0.5em;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+  border-color: var(--notion-link);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--notion-selection);
+}
+
+/* ============================================
+   Scrollbar
+   ============================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--notion-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--notion-bg-hover);
+  border-radius: 5px;
+  border: 2px solid var(--notion-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--notion-text-secondary);
+}
+
+/* ============================================
+   Selection
+   ============================================ */
+::selection {
+  background-color: var(--notion-selection);
+}
+
+.markdown-preview-view mark,
+.cm-highlight {
+  background-color: var(--notion-highlight);
+  padding: 0.1em 0;
+}
+
+/* ============================================
+   Status Bar
+   ============================================ */
+.status-bar {
+  background-color: var(--notion-bg-secondary);
+  border-top: 1px solid var(--notion-border);
+  color: var(--notion-text-secondary);
+  font-size: 0.8em;
+}
+
+.status-bar-item {
+  color: var(--notion-text-secondary);
+}
+
+/* ============================================
+   Tab Header
+   ============================================ */
+.workspace-tab-header {
+  background-color: var(--notion-bg-secondary);
+  border-bottom: 1px solid var(--notion-border);
+}
+
+.workspace-tab-header-inner {
+  color: var(--notion-text-secondary);
+}
+
+.workspace-tab-header-inner:hover {
+  background-color: var(--notion-bg-hover);
+  color: var(--notion-text);
+}
+
+.workspace-tab-header.is-active .workspace-tab-header-inner {
+  background-color: var(--notion-bg);
+  color: var(--notion-text);
+}
+
+/* ============================================
+   Title Bar
+   ============================================ */
+.titlebar {
+  background-color: var(--notion-bg-secondary);
+}
+
+.titlebar-text {
+  color: var(--notion-text);
+  font-weight: 500;
+}
+
+/* ============================================
+   Graph View
+   ============================================ */
+.graph-view.color-fill {
+  color: var(--notion-link);
+}
+
+.graph-view.color-circle {
+  color: var(--notion-text-secondary);
+}
+
+.graph-view.color-line {
+  color: var(--notion-border);
+}
+
+.graph-view.color-text {
+  color: var(--notion-text);
+}
+
+.graph-view.color-fill-highlight {
+  color: var(--notion-link);
+}
+
+.graph-view.color-line-highlight {
+  color: var(--notion-link);
+}
+
+/* ============================================
+   Outline
+   ============================================ */
+.outline .tree-item-self {
+  color: var(--notion-text);
+}
+
+.outline .tree-item-self:hover {
+  background-color: var(--notion-bg-hover);
+}
+
+/* ============================================
+   Frontmatter / YAML
+   ============================================ */
+.frontmatter-container {
+  background-color: var(--notion-bg-secondary);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+.frontmatter-container .tag {
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+}
+
+/* ============================================
+   Mermaid Diagrams
+   ============================================ */
+.mermaid {
+  background-color: var(--notion-bg-secondary);
+  border-radius: 6px;
+  padding: 1em;
+  margin: 1em 0;
+}
+
+/* ============================================
+   Math / LaTeX
+   ============================================ */
+.math {
+  color: var(--notion-text);
+}
+
+.MathJax {
+  font-size: 1.1em;
+}
+
+/* ============================================
+   Footnotes
+   ============================================ */
+.footnotes {
+  border-top: 1px solid var(--notion-border);
+  margin-top: 2em;
+  padding-top: 1em;
+  font-size: 0.9em;
+  color: var(--notion-text-secondary);
+}
+
+.footnote-ref {
+  color: var(--notion-link);
+  font-size: 0.8em;
+  vertical-align: super;
+}
+
+/* ============================================
+   Popover / Hover Preview
+   ============================================ */
+.popover {
+  background-color: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.popover.hover-popover {
+  max-width: 400px;
+}
+
+/* ============================================
+   Community Plugins Support
+   ============================================ */
+
+/* Dataview */
+.dataview.table-view-table {
+  border-collapse: collapse;
+}
+
+.dataview.table-view-table th,
+.dataview.table-view-table td {
+  border: 1px solid var(--notion-border);
+  padding: 0.5em;
+}
+
+.dataview.table-view-table th {
+  background-color: var(--notion-bg-secondary);
+}
+
+/* Calendar */
+.calendar {
+  background-color: var(--notion-bg);
+}
+
+.calendar .day {
+  color: var(--notion-text);
+}
+
+.calendar .day:hover {
+  background-color: var(--notion-bg-hover);
+}
+
+.calendar .today {
+  background-color: var(--notion-selection);
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .markdown-preview-view {
+    padding: 0 !important;
+  }
+  
+  a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+  
+  pre, code {
+    border: 1px solid #ddd !important;
+    background-color: #f5f5f5 !important;
+  }
+}

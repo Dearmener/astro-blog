@@ -1,0 +1,10 @@
+{
+  "id": "notion-style-spacing",
+  "name": "Notion Style Spacing",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Applies Notion-like line height and paragraph spacing in the editor",
+  "author": "孟国庆",
+  "authorUrl": "https://menggq.pages.dev",
+  "isDesktopOnly": false
+}

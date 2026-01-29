@@ -104,7 +104,7 @@ model = joblib.load('model.joblib')
 # 定义请求体
 class PredictionRequest(BaseModel):
     features: List[float]
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -128,7 +128,7 @@ def predict(request: PredictionRequest):
         features = np.array(request.features).reshape(1, -1)
         prediction = model.predict(features)[0]
         probability = model.predict_proba(features)[0].tolist()
-        
+
         return PredictionResponse(
             prediction=int(prediction),
             probability=probability
@@ -145,7 +145,7 @@ def predict_batch(request: BatchPredictionRequest):
     features = np.array(request.instances)
     predictions = model.predict(features).tolist()
     probabilities = model.predict_proba(features).tolist()
-    
+
     return {
         "predictions": predictions,
         "probabilities": probabilities
@@ -273,31 +273,31 @@ with mlflow.start_run(run_name="random_forest_v1"):
         "min_samples_split": 5,
         "random_state": 42
     }
-    
+
     # 记录参数
     mlflow.log_params(params)
-    
+
     # 训练模型
     model = RandomForestClassifier(**params)
     model.fit(X_train, y_train)
-    
+
     # 评估
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
-    
+
     # 记录指标
     mlflow.log_metrics({
         "accuracy": accuracy,
         "f1_score": f1
     })
-    
+
     # 记录模型
     mlflow.sklearn.log_model(model, "model")
-    
+
     # 记录额外文件
     # mlflow.log_artifact("feature_importance.png")
-    
+
     print(f"Run ID: {mlflow.active_run().info.run_id}")
     print(f"Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
 ```
@@ -350,20 +350,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install pytest pytest-cov
-      
+
       - name: Run tests
         run: pytest tests/ --cov=src --cov-report=xml
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
 
@@ -373,10 +373,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Train model
         run: python train.py
-      
+
       - name: Upload model artifact
         uses: actions/upload-artifact@v3
         with:
@@ -388,17 +388,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Download model
         uses: actions/download-artifact@v3
         with:
           name: model
-      
+
       - name: Build and push Docker image
         run: |
           docker build -t ml-model:${{ github.sha }} .
           docker push registry.example.com/ml-model:${{ github.sha }}
-      
+
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/ml-api \
@@ -415,7 +415,7 @@ import time
 
 # 定义指标
 PREDICTION_COUNT = Counter(
-    'ml_predictions_total', 
+    'ml_predictions_total',
     'Total number of predictions',
     ['model_version', 'prediction']
 )
@@ -429,17 +429,17 @@ PREDICTION_LATENCY = Histogram(
 @app.post("/predict")
 def predict(request: PredictionRequest):
     start_time = time.time()
-    
+
     prediction = model.predict(features)[0]
-    
+
     # 记录指标
     PREDICTION_COUNT.labels(
         model_version="v1",
         prediction=str(prediction)
     ).inc()
-    
+
     PREDICTION_LATENCY.observe(time.time() - start_time)
-    
+
     return {"prediction": prediction}
 
 # 启动 Prometheus 指标服务
@@ -509,13 +509,13 @@ if drift_detected:
 
 ## 最佳实践
 
-| 阶段 | 最佳实践 |
-|------|----------|
-| 开发 | 使用 MLflow 跟踪实验 |
-| 打包 | 使用 Docker 容器化 |
-| 部署 | 使用 Kubernetes 编排 |
+| 阶段 | 最佳实践                  |
+| ---- | ------------------------- |
+| 开发 | 使用 MLflow 跟踪实验      |
+| 打包 | 使用 Docker 容器化        |
+| 部署 | 使用 Kubernetes 编排      |
 | 监控 | 使用 Prometheus + Grafana |
-| 版本 | 模型版本与代码版本关联 |
+| 版本 | 模型版本与代码版本关联    |
 
 ## 总结
 
