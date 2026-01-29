@@ -16,7 +16,9 @@ sticker: emoji//1fae2
 ## 1. 引言：从序列递归到全局注意力的范式转移
 
 在深度学习的发展历程中，2017年Vaswani等人发表的《Attention Is All You Need》无疑是一座里程碑。在此之前，序列建模（Sequential Modeling）的江山主要由循环神经网络（RNN）及其变体长短期记忆网络（LSTM）和门控循环单元（GRU）所统治。这些架构基于马尔可夫假设的变体，通过维护一个隐藏状态（Hidden State）来按时间步处理信息。然而，这种递归机制存在两个根本性的物理缺陷：一是计算的不可并行性，即 $t$ 时刻的计算必须等待 $t-1$ 时刻完成，这在GPU大规模并行计算时代是巨大的资源浪费；二是“信息瓶颈”问题，即通过一个固定维度的向量来压缩任意长度的历史信息，导致长距离依赖（Long-Range Dependencies）难以被捕捉 。
+
 Transformer架构的提出，标志着一种全新的计算范式的诞生。它摒弃了递归和卷积，完全依赖于一种被称为缩放点积注意力（Scaled Dot-Product Attention）的机制。这种机制不仅实现了训练过程的完全并行化，更重要的是，它引入了一种“全局感受野”，使得序列中的每一个标记（Token）都能在单层计算中直接与序列中的任何其他标记交互。这种交互不再受制于物理距离，而是基于语义内容的相似性。
+
 本报告旨在以一种详尽且严谨的视角，解构Attention机制的每一个原子组件。我们将深入探讨Query-Key-Value（QKV）变换的线性代数本质，揭示 $N \times N$ 注意力矩阵背后的图论含义，从数学层面剖析Self-Attention与Cross-Attention的异同，论证Multi-Head Attention在特征子空间多样性上的必要性，并最终探讨FlashAttention等现代算法如何通过IO感知优化（IO-Awareness）打破 $O(N^2)$ 的内存墙，从而支撑起当今大语言模型（LLM）的宏大基石。
 
 ---
@@ -33,10 +35,7 @@ $$W_Q \in \mathbb{R}^{d_{model} \times d_k}, \quad W_K \in \mathbb{R}^{d_{model}
 
 投影后的矩阵计算如下：
 
-$$Q = X W_Q, \quad K = X W_K, \quad V = X W_V$$
-uad W_K \in \mathbb{R}^{d_{model} \times d_k}, \quad W_V \in \mathbb{R}^{d_{model} \times d_v}$$
-投影后的矩阵计算如下：
-$$Q = X W_Q, \quad K = X W_K, \quad V = X W_V$$
+$$ Q = X W_Q, \quad K = X W_K, \quad V = X W_V$$
 通常情况下，为了保证多头注意力（Multi-Head Attention）的计算总量与单头注意力一致，我们会设置 $d_k = d_v = d_{model} / h$，其中 $h$ 是注意力头的数量 。
 
 #### 2.1.1 Q、K、V 的语义角色论证
@@ -236,7 +235,8 @@ FlashAttention 采用了“在线 Softmax”技巧（衍生自 Milakov & Gimelsh
    $$l_{new} = l_{old} \cdot e^{m_{old} - m_{new}} + l_2 \cdot e^{m_2 - m_{new}}$$
    这里 $e^{m_{old} - m_{new}}$ 是一个修正因子。如果 $m_{new} > m_{old}$，旧的累加和会被缩小，以适应新的最大值。
 
-4. **更新输出**：   $$O_{new} = \text{diag}(l_{new})^{-1} \left[ \text{diag}(l_{old}) O_{old} e^{m_{old} - m_{new}} + \text{diag}(l_2) P_2 V_2 e^{m_2 - m_{new}} \right]$$
+4. **更新输出**：   
+   $$O_{new} = \text{diag}(l_{new})^{-1} \left[ \text{diag}(l_{old}) O_{old} e^{m_{old} - m_{new}} + \text{diag}(l_2) P_2 V_2 e^{m_2 - m_{new}} \right]$$
 通过这种递归公式，FlashAttention 可以在遍历 $K, V$ 数据块的过程中，逐步修正之前的计算结果，最终得到与标准 Attention **完全一致** 的数值解，但只需要 $O(N)$ 的辅助内存来存储统计量 $m$ 和 $l$ 。
 这一算法的引入，直接使得 LLM 的上下文窗口从 2K/4K 跃升至 32K、128K 甚至 1M，成为了 GPT-4、Llama 3 等现代大模型的标准配置 。
 ## 7. 结论
