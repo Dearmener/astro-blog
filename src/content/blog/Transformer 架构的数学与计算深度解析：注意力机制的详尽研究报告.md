@@ -10,7 +10,6 @@ heroImage: https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&h=400
 sticker: emoji//1fae2
 ---
 # Transformer 架构的数学与计算深度解析：注意力机制的详尽研究报告
-
 ---
 
 ## 1. 引言：从序列递归到全局注意力的范式转移
