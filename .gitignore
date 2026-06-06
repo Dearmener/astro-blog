@@ -26,6 +26,10 @@ dist/
 .DS_Store
 Thumbs.db
 
+# reasonix / codegraph
+.codegraph/
+reasonix.toml
+
 # debug
 npm-debug.log*
 yarn-debug.log*

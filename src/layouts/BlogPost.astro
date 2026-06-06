@@ -13,14 +13,18 @@ interface Heading {
 }
 
 interface Props {
-  post: CollectionEntry<'blog'>;
+  post: CollectionEntry<'blog'> | CollectionEntry<'htmlPosts'>;
   headings?: Heading[];
+  htmlContent?: string;
 }
 
-const { post, headings = [] } = Astro.props;
+const { post, headings = [], htmlContent } = Astro.props;
 const { title, description, pubDate, updatedDate, heroImage, category, tags, series } = post.data;
 
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const allPosts = [
+  ...(await getCollection('blog', ({ data }) => !data.draft)),
+  ...(await getCollection('htmlPosts', ({ data }) => !data.draft)),
+];
 
 const formattedDate = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
@@ -60,7 +64,7 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
         </div>
       )}
       
-      <div class="notion-content">
+      <div class={`notion-content ${htmlContent ? 'notion-content-wide' : ''}`}>
         <header class="notion-header">
           {series && (
             <a href={`/series/${encodeURIComponent(series)}`} class="series-badge">
@@ -119,7 +123,16 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
         </header>
         
         <div class="notion-body">
-          <slot />
+          {htmlContent ? (
+            <iframe 
+              class="html-content-frame"
+              srcdoc={htmlContent}
+              sandbox="allow-scripts allow-same-origin"
+              title={title}
+            ></iframe>
+          ) : (
+            <slot />
+          )}
         </div>
         
         {series && (
@@ -169,4 +182,53 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  .html-content-frame {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 600px;
+  }
+
+  .notion-content-wide {
+    max-width: 1200px !important;
+  }
+
+  @media (min-width: 768px) {
+    .notion-content-wide {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+  }
 </style>
+
+<script>
+  // Auto-resize iframe to fit content
+  function initIframeResize() {
+    const iframe = document.querySelector<HTMLIFrameElement>('.html-content-frame');
+    if (!iframe) return;
+
+    function resize() {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc) {
+          const height = doc.documentElement.scrollHeight;
+          iframe.style.height = height + 'px';
+        }
+      } catch {
+        // Cross-origin restriction, keep default height
+      }
+    }
+
+    iframe.addEventListener('load', resize);
+    setTimeout(resize, 300);
+    setTimeout(resize, 1000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initIframeResize);
+  } else {
+    initIframeResize();
+  }
+  document.addEventListener('astro:page-load', initIframeResize);
+</script>

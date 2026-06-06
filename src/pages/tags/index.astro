@@ -2,8 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog', ({ data }) => !data.draft);
-const allTags = posts.flatMap((post) => post.data.tags);
+const blogPosts = await getCollection('blog', ({ data }) => !data.draft);
+const htmlPostsRaw = await getCollection('htmlPosts', ({ data }) => !data.draft);
+const allPostsList = [...blogPosts, ...htmlPostsRaw];
+const allTags = allPostsList.flatMap((post) => post.data.tags);
 
 const tagStats = [...new Set(allTags)].map((tag) => ({
   name: tag,

@@ -2,7 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const posts = await getCollection('blog', ({ data }) => !data.draft);
+const blogPosts = await getCollection('blog', ({ data }) => !data.draft);
+const htmlPostsRaw = await getCollection('htmlPosts', ({ data }) => !data.draft);
+const posts = [...blogPosts, ...htmlPostsRaw];
 const categories = [...new Set(posts.map((post) => post.data.category))];
 
 const categoryStats = categories.map((category) => ({

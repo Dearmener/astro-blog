@@ -1,10 +1,17 @@
 ---
-import type { CollectionEntry } from 'astro:content';
+interface PostRef {
+  id: string;
+  data: {
+    title: string;
+    series?: string;
+    seriesOrder?: number;
+  };
+}
 
 interface Props {
   series: string;
   currentSlug: string;
-  posts: CollectionEntry<'blog'>[];
+  posts: PostRef[];
 }
 
 const { series, currentSlug, posts } = Astro.props;
