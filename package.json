@@ -15,6 +15,7 @@
     "@astrojs/tailwind": "^6.0.0",
     "astro": "^5.0.0",
     "fuse.js": "^7.0.0",
+    "jsdom": "^29.1.1",
     "marked": "^18.0.5",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",

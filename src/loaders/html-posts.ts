@@ -3,11 +3,71 @@ import { readdirSync, statSync } from 'node:fs';
 import { join, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import TurndownService from 'turndown';
+import { JSDOM } from 'jsdom';
 
 const turndown = new TurndownService({
   headingStyle: 'atx',
   codeBlockStyle: 'fenced',
   bulletListMarker: '-',
+});
+
+// Helper: check if a turndown node is an element with given class
+function hasClass(node: any, cls: string): boolean {
+  return node?.classList?.contains?.(cls) ?? false;
+}
+function tagName(node: any): string {
+  return node?.tagName ?? '';
+}
+
+// Replace TOC's h2 heading
+turndown.addRule('toc-h2', {
+  filter: (node: any) => tagName(node) === 'H2' && node?.textContent?.trim() === '目录',
+  replacement: () => '## 目录\n\n',
+});
+
+// Convert toc-item spans to numbered list items
+turndown.addRule('toc-item', {
+  filter: (node: any) => hasClass(node, 'toc-item'),
+  replacement: (_: string, node: any) => {
+    const title = node?.querySelector?.('.toc-title')?.textContent?.trim() || '';
+    const num = node?.querySelector?.('.toc-num')?.textContent?.trim() || '';
+    return `${num}. ${title}\n`;
+  },
+});
+
+// Strip decorative elements
+turndown.remove('.chapter-num');
+turndown.remove('.cover-eyebrow');
+turndown.remove('.cover-sub');
+
+// Convert callout / quote → blockquote
+turndown.addRule('callout-quote', {
+  filter: (node: any) => hasClass(node, 'callout') || hasClass(node, 'quote'),
+  replacement: (content: string) => `> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
+});
+
+// Convert takeaway → labeled blockquote (first line bold)
+turndown.addRule('takeaway', {
+  filter: (node: any) => hasClass(node, 'takeaway'),
+  replacement: (content: string) => {
+    const lines = content.trim().split('\n');
+    if (lines[0] && !lines[0].startsWith('**')) {
+      lines[0] = `**${lines[0]}**`;
+    }
+    return `> ${lines.join('\n> ')}\n\n`;
+  },
+});
+
+// Convert exec-summary → blockquote
+turndown.addRule('exec-summary', {
+  filter: (node: any) => hasClass(node, 'exec-summary'),
+  replacement: (content: string) => `> ${content.trim().replace(/\n/g, '\n> ')}\n\n`,
+});
+
+// Preserve figure captions as italic text
+turndown.addRule('figcaption', {
+  filter: (node: any) => tagName(node) === 'FIGCAPTION',
+  replacement: (content: string) => `*${content.trim()}*\n\n`,
 });
 
 function findHtmlFiles(dir: string, base: string, files: string[] = []): string[] {
@@ -66,9 +126,12 @@ function extractMeta(html: string): {
   return { title, description, pubDate, updatedDate, heroImage, category, tags, draft, series, seriesOrder };
 }
 
-function extractBody(html: string): string {
+function extractBodyHTML(html: string): string {
+  // Extract <body> innerHTML and strip the cover section
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-  return bodyMatch ? bodyMatch[1].trim() : html;
+  let body = bodyMatch ? bodyMatch[1].trim() : html;
+  body = body.replace(/<section[^>]*class="[^"]*cover[^"]*"[^>]*>[\s\S]*?<\/section>/gi, '');
+  return body;
 }
 
 export function htmlBlogLoader() {
@@ -89,8 +152,13 @@ export function htmlBlogLoader() {
         const fullPath = join(contentDir, relativePath);
         const raw = await readFile(fullPath, 'utf-8');
         const meta = extractMeta(raw);
-        const bodyHTML = extractBody(raw);
-        const mdContent = turndown.turndown(bodyHTML);
+
+        // Parse with JSDOM, pass body element to turndown (bypasses DOMParser issue)
+        const bodyHTML = extractBodyHTML(raw);
+        const dom = new JSDOM(`<body>${bodyHTML}</body>`);
+        const bodyEl = dom.window.document.body;
+        const mdContent = turndown.turndown(bodyEl);
+
         const slug = relativePath.replace(/\.html$/, '');
 
         store.set({
