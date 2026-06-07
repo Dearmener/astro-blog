@@ -2,6 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import TurndownService from 'turndown';
+
+const turndown = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced',
+  bulletListMarker: '-',
+});
 
 function findHtmlFiles(dir: string, base: string, files: string[] = []): string[] {
   const entries = readdirSync(dir);
@@ -59,23 +66,9 @@ function extractMeta(html: string): {
   return { title, description, pubDate, updatedDate, heroImage, category, tags, draft, series, seriesOrder };
 }
 
-/**
- * Post-process HTML to remove width constraints from body/css rules.
- * Strips max-width from body/html selectors and removes @page rules
- * (which only apply to print anyway).
- */
-function removeWidthConstraints(html: string): string {
-  // Remove @page blocks entirely
-  html = html.replace(/@page\s*\{[^}]*\}/gi, '');
-
-  // Remove max-width from body selector blocks (handles multi-line)
-  html = html.replace(/(body\s*\{[^}]*?)max-width\s*:\s*[^;]+;\s*/gi, '$1');
-  html = html.replace(/(html\s*\{[^}]*?)max-width\s*:\s*[^;]+;\s*/gi, '$1');
-
-  // Also handle the @media screen block: remove max-width from body inside it
-  html = html.replace(/(@media\s+screen\s*\{[\s\S]*?body\s*\{[^}]*?)max-width\s*:\s*[^;]+;\s*/gi, '$1');
-
-  return html;
+function extractBody(html: string): string {
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  return bodyMatch ? bodyMatch[1].trim() : html;
 }
 
 export function htmlBlogLoader() {
@@ -96,14 +89,15 @@ export function htmlBlogLoader() {
         const fullPath = join(contentDir, relativePath);
         const raw = await readFile(fullPath, 'utf-8');
         const meta = extractMeta(raw);
-        const processedHtml = removeWidthConstraints(raw);
+        const bodyHTML = extractBody(raw);
+        const mdContent = turndown.turndown(bodyHTML);
         const slug = relativePath.replace(/\.html$/, '');
 
         store.set({
           id: slug,
           data: {
             ...meta,
-            htmlContent: processedHtml,
+            mdContent,
           },
         });
       }

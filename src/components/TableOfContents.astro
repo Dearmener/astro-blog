@@ -11,7 +11,29 @@ interface Props {
 
 const { headings } = Astro.props;
 
-const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+// Process headings to render LaTeX in TOC
+const processedHeadings = headings.map((heading) => {
+  let processedText = heading.text;
+  
+  // Handle inline math $...$
+  processedText = processedText.replace(/\$([^$]+)\$/g, (match, formula) => {
+    // Create a span with KaTeX class for inline math
+    return `<span class="katex-inline" data-formula="${formula}">${formula}</span>`;
+  });
+  
+  // Handle block math $$...$$
+  processedText = processedText.replace(/\$\$([^$]+)\$\$/g, (match, formula) => {
+    // Create a span with KaTeX class for block math
+    return `<span class="katex-block" data-formula="${formula}">${formula}</span>`;
+  });
+  
+  return {
+    ...heading,
+    text: processedText,
+  };
+});
+
+const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth <= 3);
 ---
 
 {filteredHeadings.length > 0 && (
@@ -24,8 +46,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
       <ul class="toc-list">
         {filteredHeadings.map((heading) => (
           <li class={`toc-item toc-depth-${heading.depth}`}>
-            <a href={`#${heading.slug}`} data-slug={heading.slug} class="toc-link">
-              {heading.text}
+            <a href={`#${heading.slug}`} data-slug={heading.slug} class="toc-link" set:html={heading.text}>
             </a>
           </li>
         ))}
@@ -140,6 +161,20 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     background-color: var(--notion-border);
     border-radius: 2px;
   }
+
+  /* KaTeX styles for TOC */
+  .katex-inline {
+    font-family: 'KaTeX_Main', 'Times New Roman', serif;
+    font-size: 0.9em;
+  }
+
+  .katex-block {
+    display: block;
+    font-family: 'KaTeX_Main', 'Times New Roman', serif;
+    font-size: 0.85em;
+    text-align: center;
+    margin: 0.25rem 0;
+  }
 </style>
 
 <script>
@@ -252,6 +287,27 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
         }
       });
     });
+
+    // Render LaTeX in TOC if KaTeX is available
+    const katex = (window as any).katex;
+    if (katex) {
+      document.querySelectorAll('.katex-inline, .katex-block').forEach((element) => {
+        const formula = element.getAttribute('data-formula');
+        if (formula) {
+          try {
+            const isBlock = element.classList.contains('katex-block');
+            const rendered = katex.renderToString(formula, {
+              displayMode: isBlock,
+              throwOnError: false,
+            });
+            element.innerHTML = rendered;
+          } catch (e) {
+            // Fallback to plain text if rendering fails
+            element.textContent = formula;
+          }
+        }
+      });
+    }
   }
 
   if (document.readyState === 'loading') {

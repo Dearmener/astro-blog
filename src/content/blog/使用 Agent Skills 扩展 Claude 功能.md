@@ -55,16 +55,16 @@ Clear, concrete, actionable rules.
 
 SKill.md的元数据字段要求:
 
-| 字段           | 必需 | 作用                  |
-| ---------------- | ------ | ----------------------- |
-| <span data-type="text" style="background-color: var(--b3-card-error-background); color: var(--b3-card-error-color);">name</span>               | 是   | 唯一标识，小写+连字符 |
-| <span data-type="text" style="background-color: var(--b3-card-error-background); color: var(--b3-card-error-color);">description</span>               | 是   | **触发条件（最重要）**                      |
-| allowed-tools  | 否   | 限制可用工具          |
-| model          | 否   | 指定模型              |
-| context        | 否   | `fork` \= 独立上下文     |
-| agent          | 否   | fork 时使用的子代理   |
-| hooks          | 否   | Skill 生命周期钩子    |
-| user-invocable | 否   | 是否显示在 `/` 菜单      |
+| 字段                                                                                                                                      | 必需  | 作用              |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --- | --------------- |
+| <span data-type="text" style="background-color: var(--b3-card-error-background); color: var(--b3-card-error-color);">name</span>        | 是   | 唯一标识，小写+连字符     |
+| <span data-type="text" style="background-color: var(--b3-card-error-background); color: var(--b3-card-error-color);">description</span> | 是   | **触发条件（最重要）**   |
+| allowed-tools                                                                                                                           | 否   | 限制可用工具          |
+| model                                                                                                                                   | 否   | 指定模型            |
+| context                                                                                                                                 | 否   | `fork` \= 独立上下文 |
+| agent                                                                                                                                   | 否   | fork 时使用的子代理    |
+| hooks                                                                                                                                   | 否   | Skill 生命周期钩子    |
+| user-invocable                                                                                                                          | 否   | 是否显示在 `/` 菜单    |
 
 ## 推荐目录结构
 

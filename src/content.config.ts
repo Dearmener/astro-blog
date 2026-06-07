@@ -34,7 +34,7 @@ const htmlPosts = defineCollection({
     draft: z.boolean().default(false),
     series: z.string().optional(),
     seriesOrder: z.number().optional(),
-    htmlContent: z.string(),
+    mdContent: z.string(),
   }),
 });
 
