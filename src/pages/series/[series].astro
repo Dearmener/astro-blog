@@ -3,13 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const blogPosts = await getCollection('blog', ({ data }) => !data.draft);
-  const htmlPostsRaw = await getCollection('htmlPosts', ({ data }) => !data.draft);
-  const allPosts = [...blogPosts, ...htmlPostsRaw];
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
   
-  const seriesMap = new Map<string, any[]>();
+  const seriesMap = new Map<string, typeof posts>();
   
-  allPosts.forEach((post) => {
+  posts.forEach((post) => {
     if (post.data.series) {
       const existing = seriesMap.get(post.data.series) || [];
       existing.push(post);
@@ -28,7 +26,7 @@ export async function getStaticPaths() {
 
 interface Props {
   series: string;
-  posts: any[];
+  posts: Awaited<ReturnType<typeof getCollection<'blog'>>>;
 }
 
 const { series, posts } = Astro.props;

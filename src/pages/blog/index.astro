@@ -3,9 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 // Filter out series posts - only show standalone articles
-const blogPosts = await getCollection('blog', ({ data }) => !data.draft && !data.series);
-const htmlPostsRaw = await getCollection('htmlPosts', ({ data }) => !data.draft && !data.series);
-const posts = [...blogPosts, ...htmlPostsRaw]
+const posts = (await getCollection('blog', ({ data }) => !data.draft && !data.series))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const categories = [...new Set(posts.map((post) => post.data.category))];

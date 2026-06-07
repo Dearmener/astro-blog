@@ -2,14 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const blogPosts = await getCollection('blog', ({ data }) => !data.draft);
-const htmlPostsRaw = await getCollection('htmlPosts', ({ data }) => !data.draft);
-const allPostsList2 = [...blogPosts, ...htmlPostsRaw];
+const posts = await getCollection('blog', ({ data }) => !data.draft);
 
 // Group posts by series
-const seriesMap = new Map<string, { posts: any[]; description: string }>();
+const seriesMap = new Map<string, { posts: typeof posts; description: string }>();
 
-allPostsList2.forEach((post) => {
+posts.forEach((post) => {
   if (post.data.series) {
     const existing = seriesMap.get(post.data.series);
     if (existing) {

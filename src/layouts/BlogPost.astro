@@ -13,17 +13,14 @@ interface Heading {
 }
 
 interface Props {
-  post: CollectionEntry<'blog'> | CollectionEntry<'htmlPosts'>;
+  post: CollectionEntry<'blog'>;
   headings?: Heading[];
 }
 
 const { post, headings = [] } = Astro.props;
 const { title, description, pubDate, updatedDate, heroImage, category, tags, series } = post.data;
 
-const allPosts = [
-  ...(await getCollection('blog', ({ data }) => !data.draft)),
-  ...(await getCollection('htmlPosts', ({ data }) => !data.draft)),
-];
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 
 const formattedDate = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',

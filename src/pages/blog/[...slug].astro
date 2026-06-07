@@ -1,47 +1,19 @@
 ---
 import { getCollection, render } from 'astro:content';
-import { marked } from 'marked';
 import BlogPost from '../../layouts/BlogPost.astro';
 
 export async function getStaticPaths() {
-  const blogPosts = await getCollection('blog');
-  const htmlPosts = await getCollection('htmlPosts');
-
-  const paths = [
-    ...blogPosts.map((post) => ({
-      params: { slug: post.id },
-      props: { post, source: 'blog' as const },
-    })),
-    ...htmlPosts.map((post) => ({
-      params: { slug: post.id },
-      props: { post, source: 'html' as const },
-    })),
-  ];
-
-  return paths;
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: post,
+  }));
 }
 
-const { post, source } = Astro.props;
-
-let Content: any;
-let headings: any[] = [];
-let mdHtml: string | undefined;
-
-if (source === 'blog') {
-  const rendered = await render(post);
-  Content = rendered.Content;
-  headings = rendered.headings;
-} else {
-  mdHtml = marked.parse(post.data.mdContent) as string;
-}
+const post = Astro.props;
+const { Content, headings } = await render(post);
 ---
 
-{source === 'blog' ? (
-  <BlogPost post={post} headings={headings}>
-    <Content />
-  </BlogPost>
-) : (
-  <BlogPost post={post} headings={headings}>
-    <div set:html={mdHtml} />
-  </BlogPost>
-)}
+<BlogPost post={post} headings={headings}>
+  <Content />
+</BlogPost>

@@ -3,16 +3,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const blogPosts = await getCollection('blog', ({ data }) => !data.draft);
-  const htmlPostsRaw = await getCollection('htmlPosts', ({ data }) => !data.draft);
-  const allPosts = [...blogPosts, ...htmlPostsRaw];
-  const categories = [...new Set(allPosts.map((post) => post.data.category))];
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const categories = [...new Set(posts.map((post) => post.data.category))];
   
   return categories.map((category) => ({
     params: { category },
     props: {
       category,
-      posts: allPosts.filter((post) => post.data.category === category)
+      posts: posts.filter((post) => post.data.category === category)
         .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
     },
   }));
@@ -20,7 +18,7 @@ export async function getStaticPaths() {
 
 interface Props {
   category: string;
-  posts: any[];
+  posts: Awaited<ReturnType<typeof getCollection<'blog'>>>;
 }
 
 const { category, posts } = Astro.props;
