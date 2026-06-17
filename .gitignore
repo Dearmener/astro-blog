@@ -34,3 +34,6 @@ reasonix.toml
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# build-time font cache (downloaded on first build)
+.cache/

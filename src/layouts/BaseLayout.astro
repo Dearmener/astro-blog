@@ -14,20 +14,22 @@ interface Props {
   modifiedTime?: Date;
   author?: string;
   tags?: string[];
+  ogSlug?: string;
 }
 
-const { title, description, image, type, publishedTime, modifiedTime, author, tags } = Astro.props;
+const { title, description, image, type, publishedTime, modifiedTime, author, tags, ogSlug } = Astro.props;
 ---
 
-<BaseHead 
-  title={title} 
-  description={description} 
+<BaseHead
+  title={title}
+  description={description}
   image={image}
   type={type}
   publishedTime={publishedTime}
   modifiedTime={modifiedTime}
   author={author}
   tags={tags}
+  ogSlug={ogSlug}
 >
   <Header />
   <main class="flex-1">

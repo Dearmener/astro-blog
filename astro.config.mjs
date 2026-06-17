@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { visit } from 'unist-util-visit';
+import ogImage from './src/integrations/og-image.ts';
 
 function remarkObsidianImages() {
   return (tree, file) => {
@@ -66,6 +67,7 @@ export default defineConfig({
     tailwind(),
     mdx(),
     sitemap(),
+    ogImage(),
   ],
   markdown: {
     shikiConfig: {

@@ -8,25 +8,47 @@ interface Props {
   modifiedTime?: Date;
   author?: string;
   tags?: string[];
+  ogSlug?: string;
 }
 
 const SITE_NAME = '孟国庆的博客';
 const SITE_URL = 'https://menggq.pages.dev';
 const DEFAULT_AUTHOR = '孟国庆';
+const DEFAULT_DESCRIPTION = '孟国庆的个人技术博客，分享 AI、机器学习、深度学习、大语言模型等技术文章';
 
-const { 
-  title, 
-  description = '孟国庆的个人技术博客，分享 AI、机器学习、深度学习、大语言模型等技术文章',
-  image = '/og-image.svg',
+const {
+  title,
+  description = DEFAULT_DESCRIPTION,
+  image,
   type = 'website',
   publishedTime,
   modifiedTime,
   author = DEFAULT_AUTHOR,
-  tags = []
+  tags = [],
+  ogSlug,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || SITE_URL);
-const ogImageURL = new URL(image, Astro.site || SITE_URL);
+
+// Resolve OG image. Priority: per-post PNG (when `ogSlug` is provided and
+// takes precedence over the hero) > explicit `image` prop > generic
+// /og-image.png fallback. Per-post images are generated at build time by
+// the og-image integration into dist/og/.
+function safeSlug(s) {
+  return String(s)
+    .replace(/[\/\\]/g, '-')
+    .replace(/[^a-zA-Z0-9\u4e00-\u9fa5\-_]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 120);
+}
+
+const resolvedOgImage = ogSlug
+  ? new URL(`/og/${safeSlug(ogSlug)}.png`, Astro.site || SITE_URL).toString()
+  : image
+    ? new URL(image, Astro.site || SITE_URL).toString()
+    : new URL('/og-image.png', Astro.site || SITE_URL).toString();
+const ogImageURL = resolvedOgImage;
 
 // JSON-LD structured data
 const jsonLd = type === 'article' ? {
@@ -34,7 +56,7 @@ const jsonLd = type === 'article' ? {
   "@type": "BlogPosting",
   "headline": title,
   "description": description,
-  "image": ogImageURL.toString(),
+  "image": ogImageURL,
   "author": {
     "@type": "Person",
     "name": author,
@@ -89,14 +111,17 @@ const jsonLd = type === 'article' ? {
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow" />
     
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph / Facebook / WeChat (WeChat crawls og:* meta to build share cards) -->
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:secure_url" content={ogImageURL} />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:locale" content="zh_CN" />
     

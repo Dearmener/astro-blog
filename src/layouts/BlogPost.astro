@@ -3,6 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import SeriesNav from '../components/SeriesNav.astro';
 import SeriesPagination from '../components/SeriesPagination.astro';
+import ShareButtons from '../components/ShareButtons.astro';
 import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 
@@ -39,14 +40,15 @@ const formattedUpdatedDate = updatedDate
 const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
 ---
 
-<BaseLayout 
-  title={`${title} | 孟国庆的博客`} 
-  description={description} 
+<BaseLayout
+  title={`${title} | 孟国庆的博客`}
+  description={description}
   image={heroImage}
   type="article"
   publishedTime={pubDate}
   modifiedTime={updatedDate}
   tags={tags}
+  ogSlug={post.id}
 >
   <div class="blog-post-layout">
     {series && (
@@ -121,11 +123,13 @@ const showToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length > 0;
         <div class="notion-body">
           <slot />
         </div>
-        
+
+        <ShareButtons title={title} description={description} url={Astro.url.href} />
+
         {series && (
           <SeriesPagination series={series} currentSlug={post.id} posts={allPosts} />
         )}
-        
+
         {showToc && <TableOfContents headings={headings} />}
       </div>
     </article>
