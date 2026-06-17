@@ -16,7 +16,6 @@
     "@resvg/resvg-js": "^2.6.2",
     "astro": "^5.0.0",
     "fuse.js": "^7.0.0",
-    "qrcode-generator": "^2.0.4",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "satori": "^0.26.0",
