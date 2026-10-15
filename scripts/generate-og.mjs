@@ -14,33 +14,67 @@ const FONTS_DIR = join(CACHE_DIR, 'fonts');
 // an override when invoked.
 const DEFAULT_OUT_DIR = join(ROOT, 'dist', 'og');
 
-const FONT_URL =
-  'https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf';
-const FONT_PATH = join(FONTS_DIR, 'NotoSansSC-Regular.otf');
+/* ------------------------------------------------------------------
+   Fonts
 
-async function ensureFont() {
-  if (existsSync(FONT_PATH) && readFileSync(FONT_PATH).length > 1_000_000) {
-    return FONT_PATH;
-  }
+   Serif for titles, sans for everything else -- the same split the site
+   uses. Both are CJK faces because most titles are Chinese; a Latin-only
+   serif would leave the Han glyphs falling back to the sans face and the
+   heading would read inconsistently within one line.
+------------------------------------------------------------------ */
+
+const FONTS = [
+  {
+    name: 'Noto Serif',
+    url: 'https://github.com/googlefonts/noto-cjk/raw/main/Serif/OTF/SimplifiedChinese/NotoSerifCJKsc-Regular.otf',
+    file: 'NotoSerifSC-Regular.otf',
+  },
+  {
+    name: 'Noto Sans',
+    url: 'https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf',
+    file: 'NotoSansSC-Regular.otf',
+  },
+];
+
+async function loadFonts() {
   mkdirSync(FONTS_DIR, { recursive: true });
-  console.log('[og] downloading CJK font (one-time, ~16MB)...');
-  const res = await fetch(FONT_URL, { redirect: 'follow' });
-  if (!res.ok) throw new Error(`Failed to download font: ${res.status}`);
-  const buf = Buffer.from(await res.arrayBuffer());
-  writeFileSync(FONT_PATH, buf);
-  console.log(`[og] font cached at ${FONT_PATH}`);
-  return FONT_PATH;
+  const out = [];
+  for (const f of FONTS) {
+    const path = join(FONTS_DIR, f.file);
+    if (!existsSync(path) || readFileSync(path).length < 1_000_000) {
+      console.log(`[og] downloading ${f.name} (one-time, ~16MB)...`);
+      const res = await fetch(f.url, { redirect: 'follow' });
+      if (!res.ok) throw new Error(`Failed to download ${f.name}: ${res.status}`);
+      writeFileSync(path, Buffer.from(await res.arrayBuffer()));
+      console.log(`[og] ${f.name} cached at ${path}`);
+    }
+    out.push({
+      name: f.name,
+      data: readFileSync(path),
+      weight: 400,
+      style: 'normal',
+    });
+  }
+  return out;
 }
 
+/* ------------------------------------------------------------------
+   Palette
+
+   Mirrors the `.dark` block in src/styles/global.css. OG cards are always
+   dark: they are seen as small thumbnails in a feed, where a light card
+   washes out, and dark also matches the code blocks readers associate
+   with the site. hue is supplied per post by the integration so a series
+   card matches its rows in list views.
+------------------------------------------------------------------ */
+
 const COLORS = {
-  bg: '#0f0f1a',
-  bgSoft: '#1a1a2e',
-  accent: '#a855f7',
-  accent2: '#6366f1',
-  text: '#f8fafc',
-  textDim: '#94a3b8',
-  textMuted: '#64748b',
-  border: 'rgba(168, 85, 247, 0.25)',
+  bg: 'hsl(174 23% 7%)',
+  text: 'hsl(150 12% 92%)',
+  textDim: 'hsl(170 10% 62%)',
+  textMuted: 'hsl(170 8% 46%)',
+  line: 'hsl(172 14% 19%)',
+  accent: 'hsl(124 70% 55%)',
 };
 
 function escapeXml(s) {
@@ -57,51 +91,66 @@ function truncate(s, n) {
   return s.length > n ? s.slice(0, n - 1) + '…' : s;
 }
 
-function buildTemplate({ title, description, category, tags, author, siteName, isArticle }) {
+function buildTemplate({ title, description, category, tags, author, siteName, isArticle, hue = 173 }) {
+  const h = Number(hue);
+
+  // Outlined pills rather than filled ones: at thumbnail size a filled chip
+  // reads as a blob, an outline still reads as a tag.
   const tagBadges = (tags || [])
     .slice(0, 3)
     .map(
-      (t, i) =>
-        `<div style="display:flex;align-items:center;padding:8px 16px;border-radius:999px;background:rgba(168,85,247,${0.1 + i * 0.05});border:1px solid ${COLORS.border};color:#c4b5fd;font-size:22px;font-weight:500;">#${escapeXml(t)}</div>`,
+      (t) =>
+        `<div style="display:flex;padding:6px 14px;border-radius:999px;border:1px solid hsl(${h} 30% 32%);color:hsl(${h} 65% 72%);font-size:21px;">${escapeXml(t)}</div>`,
     )
     .join('');
 
-  return `<div style="display:flex;flex-direction:column;width:1200px;height:630px;background:linear-gradient(135deg, ${COLORS.bg} 0%, ${COLORS.bgSoft} 100%);font-family:'Noto';position:relative;"><div style="position:absolute;top:-200px;left:-200px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle, rgba(102,126,234,0.25) 0%, transparent 70%);display:flex;"></div><div style="position:absolute;bottom:-250px;right:-150px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle, rgba(168,85,247,0.22) 0%, transparent 70%);display:flex;"></div><div style="position:absolute;inset:0;opacity:0.04;display:flex;flex-direction:column;">${Array.from({ length: 12 })
-    .map(
-      (_, i) =>
-        `<div style="position:absolute;left:0;right:0;top:${i * 55}px;height:1px;background:#fff;display:flex;"></div>`,
-    )
-    .join('')}${Array.from({ length: 22 })
-    .map(
-      (_, i) =>
-        `<div style="position:absolute;top:0;bottom:0;left:${i * 60}px;width:1px;background:#fff;display:flex;"></div>`,
-    )
-    .join('')}</div><div style="display:flex;flex-direction:column;flex:1;padding:60px 80px;position:relative;"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:16px;"><div style="display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:#fff;font-size:28px;font-weight:700;">孟</div><div style="display:flex;flex-direction:column;"><div style="color:#f8fafc;font-size:24px;font-weight:600;line-height:1.2;">${escapeXml(siteName)}</div><div style="color:#64748b;font-size:18px;margin-top:2px;">menggq.pages.dev</div></div></div>${
+  // One hairline accent bar, echoing the rule the site draws beside every
+  // section heading.
+  const accentBar = `<div style="display:flex;width:56px;height:4px;border-radius:2px;background:hsl(${h} 48% 52%);margin-bottom:22px;"></div>`;
+
+  const categoryChip =
     isArticle && category
-      ? `<div style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;background:rgba(168,85,247,0.15);border:1px solid ${COLORS.border};color:#c4b5fd;font-size:20px;font-weight:500;"><div style="display:flex;width:8px;height:8px;border-radius:50%;background:#a855f7;"></div>${escapeXml(category)}</div>`
-      : ''
-  }</div><div style="display:flex;flex-direction:column;margin-top:auto;margin-bottom:auto;max-width:1040px;"><div style="color:#f8fafc;font-size:${isArticle ? 64 : 72}px;font-weight:700;line-height:1.2;letter-spacing:-0.02em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${escapeXml(truncate(title, isArticle ? 60 : 24))}</div>${
-    description && isArticle
-      ? `<div style="color:${COLORS.textDim};font-size:26px;line-height:1.5;margin-top:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:1000px;">${escapeXml(truncate(description, 140))}</div>`
-      : ''
-  }</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;"><div style="display:flex;gap:12px;flex-wrap:wrap;">${tagBadges}</div><div style="display:flex;align-items:center;gap:10px;color:${COLORS.textMuted};font-size:22px;"><div style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:#fff;font-size:18px;font-weight:700;">${escapeXml(
-    (author || '孟').slice(0, 1),
-  )}</div><div style="display:flex;">${escapeXml(author || '孟国庆')}</div></div></div></div></div>`;
+      ? `<div style="display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:3px;border:1px solid hsl(${h} 30% 30%);color:hsl(${h} 70% 74%);font-size:20px;font-weight:500;"><div style="display:flex;width:7px;height:7px;border-radius:50%;background:hsl(${h} 70% 21%);"></div>${escapeXml(category)}</div>`
+      : '';
+
+  return `<div style="display:flex;flex-direction:column;width:1200px;height:630px;background:${COLORS.bg};font-family:'Noto Sans';position:relative;">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:hsl(${h} 70% 21%);display:flex;"></div>
+
+  <div style="display:flex;flex-direction:column;flex:1;padding:56px 72px;position:relative;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:3px;background:hsl(${h} 70% 21%);color:#fff;font-family:'Noto Serif';font-size:26px;font-weight:700;">孟</div>
+        <div style="display:flex;flex-direction:column;">
+          <div style="color:${COLORS.text};font-size:23px;font-weight:600;line-height:1.25;">${escapeXml(siteName)}</div>
+          <div style="color:${COLORS.textMuted};font-size:17px;margin-top:2px;">menggq.pages.dev</div>
+        </div>
+      </div>
+      ${categoryChip}
+    </div>
+
+    <div style="display:flex;flex-direction:column;margin-top:auto;margin-bottom:auto;max-width:1010px;">${accentBar}<div style="font-family:'Noto Serif';color:${COLORS.text};font-size:${isArticle ? 58 : 66}px;font-weight:700;line-height:1.28;letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${escapeXml(truncate(title, isArticle ? 44 : 20))}</div>
+      ${
+        description && isArticle
+          ? `<div style="color:${COLORS.textDim};font-size:25px;line-height:1.6;margin-top:22px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:960px;">${escapeXml(truncate(description, 110))}</div>`
+          : ''
+      }
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">${tagBadges}</div>
+      <div style="display:flex;align-items:center;gap:10px;color:${COLORS.textMuted};font-size:21px;">${escapeXml(author || '孟国庆')}</div>
+    </div>
+  </div>
+</div>`;
 }
 
-async function renderOgPng({ fontData, template }) {
+async function renderOgPng({ fonts, template }) {
   const tree = satoriHtml(template);
   const svg = await satori(tree, {
     width: 1200,
     height: 630,
-    fonts: [
-      {
-        name: 'Noto',
-        data: fontData,
-        weight: 400,
-        style: 'normal',
-      },
-    ],
+    fonts,
   });
   const resvg = new Resvg(svg, {
     fitTo: { mode: 'width', value: 1200 },
@@ -110,25 +159,6 @@ async function renderOgPng({ fontData, template }) {
     },
   });
   return resvg.render().asPng();
-}
-
-function _debugTree(node, depth = 0) {
-  if (!node) return;
-  const pad = '  '.repeat(depth);
-  const tag = node.type || (node.props ? 'el' : typeof node);
-  const display = node.props?.style?.display || '';
-  const childCount = node.props?.children
-    ? Array.isArray(node.props.children)
-      ? node.props.children.length
-      : 1
-    : 0;
-  console.log(`${pad}<${tag} display="${display}" children=${childCount}>`);
-  const children = node.props?.children;
-  if (Array.isArray(children)) {
-    children.forEach((c) => _debugTree(c, depth + 1));
-  } else if (typeof children === 'object' && children) {
-    _debugTree(children, depth + 1);
-  }
 }
 
 function safeSlug(s) {
@@ -141,8 +171,7 @@ function safeSlug(s) {
 }
 
 async function main() {
-  const fontPath = await ensureFont();
-  const fontData = readFileSync(fontPath);
+  const fonts = await loadFonts();
 
   const arg = process.argv[2];
   if (!arg) {
@@ -163,12 +192,12 @@ async function main() {
       tags: job.tags || [],
       author: job.author || '孟国庆',
       siteName,
+      hue: job.hue,
       isArticle: job.isArticle !== false,
     });
-    const png = await renderOgPng({ fontData, template: tpl });
+    const png = await renderOgPng({ fonts, template: tpl });
     const file = safeSlug(job.slug) + '.png';
-    const outPath = join(outDir, file);
-    writeFileSync(outPath, png);
+    writeFileSync(join(outDir, file), png);
     count++;
   }
   console.log(`[og] generated ${count} og images -> ${outDir}`);

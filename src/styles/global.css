@@ -2,39 +2,122 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------
+   Paper Mono — SIL Open Font License 1.1, self-hosted.
+
+   One variable file covers all eight weights (52 KB). It ships Latin,
+   symbols and box-drawing glyphs but no CJK, so Chinese inside a mono
+   run falls through to the next family in the stack, which is the
+   platform's own CJK face. That is the intended split: Paper Mono draws
+   the digits, punctuation and Latin, the system draws the Han characters.
+------------------------------------------------------------------ */
+
+@font-face {
+  font-family: "Paper Mono";
+  src: url("/fonts/PaperMono[wght].woff2") format("woff2-variations");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------
+   Design tokens
+
+   Colours are stored as bare HSL channels so both `hsl(var(--x))` and
+   Tailwind's slash-opacity modifiers (`hsl(var(--x) / .4)`) work.
+
+   The palette is a single desaturated teal-green ramp. Everything —
+   links, tags, active nav, accents — resolves back to `--brand`, so the
+   page reads as one hue instead of a rainbow. Contrast pairs against
+   `--bg` are all >= 5.3:1 (WCAG AA) in both themes.
+------------------------------------------------------------------ */
+
 @layer base {
   :root {
-    --notion-text: #37352f;
-    --notion-text-secondary: #787774;
-    --notion-bg: #ffffff;
-    --notion-bg-secondary: #f7f6f3;
-    --notion-bg-hover: #efefef;
-    --notion-border: #e9e9e7;
-    --notion-link: #2eaadc;
-    --notion-code-bg: #f7f6f3;
+    --bg: 150 20% 98%;
+    --fg: 174 30% 12%;
+--brand: 124 70% 21%;
+    /* #105915. Dark enough that one token covers every use: white type on it
+       measures 8.53:1 and it scores 8.17:1 as link text on the page
+       background, so fills and small text need no separate ink colour. */
+
+    --fg-muted: 172 12% 38%;
+    --fg-faint: 172 10% 52%;
+
+    --bg-subtle: 158 22% 94%;
+    --bg-hover: 156 26% 91%;
+    --accent: 156 26% 91%;
+    --accent-fg: 174 30% 14%;
+
+    --line: 158 16% 85%;
+    --line-strong: 158 14% 78%;
+
+    --radius: 0.25rem;
+    --measure: 47rem;
+    --page: 1215px;
+
+    --font-sans: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB",
+      "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    /* A Latin serif leads so digits and English words in headings get a
+       properly drawn face; CJK falls through to Songti / Source Han Serif. */
+    --font-serif: Charter, "Bitstream Charter", Georgia, "Songti SC",
+      "Source Han Serif SC", "Noto Serif SC", STSong, SimSun, serif;
+    --font-mono: "Paper Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+      Consolas, "Liberation Mono", "Courier New", monospace;
   }
 
   .dark {
-    --notion-text: #e6e6e5;
-    --notion-text-secondary: #9b9a97;
-    --notion-bg: #191919;
-    --notion-bg-secondary: #252525;
-    --notion-bg-hover: #2f2f2f;
-    --notion-border: #373737;
-    --notion-link: #529cca;
-    --notion-code-bg: #2f2f2f;
+    --bg: 174 22% 7%;
+    --fg: 150 12% 92%;
+--brand: 124 70% 55%;
+
+    --fg-muted: 170 10% 62%;
+    --fg-faint: 170 8% 46%;
+
+    --bg-subtle: 172 16% 11%;
+    --bg-hover: 172 14% 16%;
+    --accent: 172 15% 15%;
+    --accent-fg: 150 12% 88%;
+
+    --line: 172 14% 19%;
+    --line-strong: 172 12% 27%;
   }
 
   html {
     scroll-behavior: smooth;
-    font-feature-settings: "kern" 1, "liga" 1;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
 
   body {
-    background-color: var(--notion-bg);
-    color: var(--notion-text);
+    background-color: hsl(var(--bg));
+    color: hsl(var(--fg));
+    font-family: var(--font-sans);
     @apply transition-colors duration-200;
+  }
+
+  /* Headings pick up the serif face everywhere, not just inside articles. */
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    text-wrap: balance;
+  }
+
+  /* Dates, counts and other numerals share one aligned column. */
+  time, .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: hsl(var(--brand) / 0.18);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--brand) / 0.55);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 }
 
@@ -43,59 +126,74 @@
     @apply min-h-screen;
   }
 
-  .notion-cover {
-    @apply w-full h-[30vh] min-h-[200px] max-h-[300px] relative;
-  }
 
-  .notion-cover img {
-    @apply w-full h-full object-cover;
-  }
 
   .notion-content {
-    @apply max-w-[900px] mx-auto px-6 md:px-16 py-8 relative;
+    @apply mx-auto px-6 py-10 relative;
+    /* Wider than the standard page shell. Centring a 47rem column and still
+       fitting a 17rem rail in the right margin needs 47 + 2 x (17 + 2) rem;
+       the extra 3rem accounts for the 1.5rem of inline padding each side. */
+    max-width: calc(47rem + 2 * 19rem + 3rem);
+  }
+
+  /* Article column stays at the ~47rem measure the reference uses, centred
+     inside the full page width. */
+  .notion-column {
+    max-width: var(--measure);
   }
 
   .notion-header {
-    @apply mb-8;
+    @apply mb-9;
   }
 
   .notion-title {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    line-height: 1.2;
-    color: var(--notion-text);
-    @apply mb-4;
+    line-height: 1.32;
+    letter-spacing: -0.01em;
+    color: hsl(var(--fg));
+    @apply mb-3;
+  }
+
+  @media (min-width: 768px) {
+    .notion-title {
+      font-size: 2.25rem;
+    }
   }
 
   .notion-description {
-    font-size: 1.125rem;
-    color: var(--notion-text-secondary);
+    font-size: 1.0625rem;
+    color: hsl(var(--fg-muted));
     @apply mt-4 leading-relaxed;
   }
 
-  .notion-properties {
-    @apply flex flex-col gap-2 text-sm;
+  /* Flat metadata line: date · category, with everything else dropped. */
+  .notion-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--fg-muted));
   }
 
-  .notion-property {
-    @apply flex items-center gap-2 py-1;
+  .notion-meta a {
+    color: hsl(var(--fg-muted));
+    text-decoration: none;
   }
 
-  .notion-property-icon {
-    @apply w-5 text-center flex-shrink-0;
+  .notion-meta a:hover {
+    color: hsl(var(--brand));
   }
 
-  .notion-property-label {
-    color: var(--notion-text-secondary);
-    @apply w-20 flex-shrink-0;
-  }
-
-  .notion-property-value {
-    color: var(--notion-text);
+  .notion-header .notion-tags {
+    margin-top: 0.625rem;
   }
 
   .notion-link {
-    color: var(--notion-link);
+    color: hsl(var(--brand));
     @apply hover:underline;
   }
 
@@ -103,53 +201,174 @@
     @apply flex flex-wrap gap-1.5;
   }
 
+  /* Tag chips carry a per-tag hue (set via --tag-h by utils/tag-hue.ts) while
+     saturation and lightness stay pinned. Colouring by index instead would
+     encode nothing, which is what makes a tag cloud read as decoration. */
   .notion-tag {
-    @apply px-2 py-0.5 rounded text-sm font-medium;
+    @apply px-2 py-1 text-xs font-medium leading-none;
+    color: hsl(var(--tag-h) 62% 30%);
+    background-color: hsl(var(--tag-h) 62% 94%);
+    border-radius: 3px;
+    transition: background-color 0.15s, color 0.15s;
   }
 
-  .notion-tag-0 { @apply bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300; }
-  .notion-tag-1 { @apply bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300; }
-  .notion-tag-2 { @apply bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300; }
-  .notion-tag-3 { @apply bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300; }
-  .notion-tag-4 { @apply bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300; }
-  .notion-tag-5 { @apply bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300; }
+  a.notion-tag:hover {
+    color: hsl(var(--tag-h) 62% 97%);
+    background-color: hsl(var(--tag-h) 58% 34%);
+  }
+
+  .dark .notion-tag {
+    color: hsl(var(--tag-h) 55% 78%);
+    background-color: hsl(var(--tag-h) 40% 20%);
+  }
+
+  .dark a.notion-tag:hover {
+    color: hsl(var(--tag-h) 60% 92%);
+    background-color: hsl(var(--tag-h) 45% 30%);
+  }
+
+  /* ----------------------------------------------------------------
+     Article body
+
+     17px on a 1.9 leading reads comfortably for long-form CJK, where the
+     larger leading compensates for the denser glyph grid. Measure is
+     capped so lines stay ~40 CJK characters.
+  ---------------------------------------------------------------- */
 
   .notion-body {
-    @apply mt-8;
+    margin-top: 2.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.9;
+    letter-spacing: 0.01em;
+    color: hsl(var(--fg));
+  }
+
+  .notion-body > *:first-child {
+    margin-top: 0;
+  }
+
+  /* Heading scale.
+
+     Each level gets a signal that cannot be missed while skimming Chinese,
+     where a 2px size difference between 17px and 19px reads as noise:
+
+       h2  serif 22px + 3px brand bar in the margin
+       h3  sans   21px bold, back in the body family, big top margin
+       h4  sans   18px bold + 2px neutral bar (a quieter echo of h2)
+       h5  sans   17px bold, muted
+
+     h3 sits in the body family on purpose: it is the same voice one step
+     louder, which reads as a sub-topic inside an h2 section. Flipping it to
+     serif put it visually between h2 and the body instead of clearly above
+     it. Levels below h3 are too close to body size to rely on size alone, so
+     they carry a bar or a colour instead. */
+
+  /* Vertical rhythm.
+
+     Margins are in `em` against the element's own font size rather than
+     Tailwind's fixed 4px scale, so the rhythm stays proportional to the type
+     instead of drifting when a level is resized.
+
+     Two rules the scale has to satisfy:
+
+     1. A heading's space *below* must be at least the paragraph gap. Below
+        that, the heading binds to the text after it rather than to the block
+        before it, and the eye reads it as the tail of the previous sentence.
+     2. Space *above* a heading scales with the heading, so each level down
+        gets visibly tighter: 2.4 / 1.9 / 1.65 / 1.4 em from h2 to h5. */
+
+  .notion-body p {
+    margin: 0 0 0.82em;
+  }
+
+  /* Block-level insertions get a little more air than a paragraph so they
+     read as separate objects rather than as another sentence. */
+  .notion-body ul,
+  .notion-body ol,
+  .notion-body blockquote,
+  .notion-body pre,
+  .notion-body table {
+    margin-top: 1.2em;
+    margin-bottom: 1.2em;
+  }
+
+  .notion-body img {
+    margin: 1.6em 0;
+  }
+
+  .notion-body hr {
+    margin: 2.4em 0;
   }
 
   .notion-body h1 {
-    font-size: 1.875rem;
-    font-weight: 600;
-    color: var(--notion-text);
-    @apply mt-10 mb-4;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 2em 0 0.7em;
   }
 
   .notion-body h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--notion-text);
-    @apply mt-8 mb-3;
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 2.4em 0 0.75em;
+    padding-left: 0.75rem;
+    border-left: 3px solid hsl(var(--brand));
+    scroll-margin-top: calc(var(--header-h, 104px) + 1rem);
   }
 
   .notion-body h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--notion-text);
-    @apply mt-6 mb-2;
+    font-family: var(--font-sans);
+    font-size: 1.3125rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 1.9em 0 0.7em;
+    scroll-margin-top: calc(var(--header-h, 104px) + 1rem);
   }
 
-  .notion-body p {
-    @apply mb-4 leading-relaxed;
+  .notion-body h4 {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.6;
+    margin: 1.65em 0 0.8em;
+    padding-left: 0.625rem;
+    border-left: 2px solid hsl(var(--line-strong));
+    scroll-margin-top: calc(var(--header-h, 104px) + 1rem);
   }
 
+  .notion-body h5,
+  .notion-body h6 {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: hsl(var(--fg-muted));
+    margin: 1.4em 0 0.82em;
+  }
+
+  /* Underline sits at 40% and only darkens on hover, so a page dense with links
+     does not turn into a wall of rules. */
   .notion-body a {
-    color: var(--notion-link);
-    @apply underline decoration-1 underline-offset-2 hover:decoration-2;
+    color: hsl(var(--brand));
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: hsl(var(--brand) / 0.4);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.15s;
   }
 
-  .notion-body ul, .notion-body ol {
-    @apply mb-4 pl-6;
+  .notion-body a:hover {
+    text-decoration-color: hsl(var(--brand));
+  }
+
+  .notion-body strong {
+    font-weight: 700;
+    color: hsl(var(--fg));
+  }
+
+  .notion-body ul,
+  .notion-body ol {
+    @apply pl-6;
   }
 
   .notion-body ul {
@@ -160,69 +379,138 @@
     @apply list-decimal;
   }
 
+  .notion-body li::marker {
+    color: hsl(var(--fg-faint));
+  }
+
+  /* The marker handles the indent so the text block stays flush. */
   .notion-body li {
-    @apply mb-1 leading-relaxed;
+    @apply pl-1;
+  }
+
+  /* List items are usually one line, so a gap near half a line box reads as
+     separation without opening a hole the way paragraph spacing would. */
+  .notion-body li + li {
+    margin-top: 0.55em;
+  }
+
+  .notion-body li > ul,
+  .notion-body li > ol {
+    margin: 0.5em 0;
   }
 
   .notion-body blockquote {
-    background-color: var(--notion-bg-secondary);
-    @apply border-l-4 border-gray-400 dark:border-gray-600 px-4 py-3 my-4;
+    background-color: hsl(var(--bg-subtle) / 0.6);
+    border-left: 3px solid hsl(var(--line-strong));
+    color: hsl(var(--fg-muted));
+    @apply px-4 py-3;
+    border-radius: 0 var(--radius) var(--radius) 0;
   }
 
+  .notion-body blockquote > *:last-child {
+    @apply mb-0;
+  }
+
+  /* Shiki writes background-color and color inline on <pre>, so this rule
+     only owns the frame: padding, radius, overflow and spacing. */
   .notion-body pre {
-    background-color: var(--notion-code-bg);
-    @apply rounded-md p-4 overflow-x-auto my-4 text-sm;
+    border: 1px solid hsl(var(--line));
+    border-radius: var(--radius);
+    @apply p-4 overflow-x-auto;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    tab-size: 2;
+  }
+
+  .notion-body pre code {
+    background: none;
+    padding: 0;
+    font-family: var(--font-mono);
   }
 
   .notion-body code:not(pre code) {
-    background-color: var(--notion-code-bg);
-    color: #eb5757;
-    @apply px-1.5 py-0.5 rounded text-sm font-mono;
+    background-color: hsl(var(--bg-hover));
+    color: hsl(var(--fg));
+    @apply px-1.5 py-0.5 text-xs;
+    font-family: var(--font-mono);
+    border-radius: 3px;
+    border: 1px solid hsl(var(--line) / 0.7);
   }
 
   .notion-body img {
-    @apply rounded-lg my-6 max-w-full;
+    @apply max-w-full;
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--line));
   }
 
   .notion-body hr {
-    border-color: var(--notion-border);
-    @apply my-8;
+    border: 0;
+    border-top: 1px solid hsl(var(--fg) / 0.15);
   }
 
   .notion-body table {
-    @apply w-full my-4 text-sm;
+    @apply w-full text-sm;
+    border-collapse: collapse;
   }
 
-  .notion-body th, .notion-body td {
-    border: 1px solid var(--notion-border);
-    @apply px-4 py-2 text-left;
+  .notion-body th,
+  .notion-body td {
+    border-bottom: 1px solid hsl(var(--line));
+    @apply px-3 py-2.5 text-left align-top;
   }
 
   .notion-body th {
-    background-color: var(--notion-bg-secondary);
-    @apply font-semibold;
+    background-color: hsl(var(--bg-subtle) / 0.6);
+    font-weight: 700;
+    white-space: nowrap;
   }
 
+  .notion-body tbody tr:hover {
+    background-color: hsl(var(--bg-subtle) / 0.35);
+  }
+
+  .notion-body kbd {
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    @apply px-1.5 py-0.5;
+    border: 1px solid hsl(var(--line-strong));
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    background-color: hsl(var(--bg-subtle));
+  }
+
+  /* ---------------------------------------------------------------- */
+
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all duration-150;
+    @apply inline-flex items-center justify-center px-4 py-2 font-medium transition-colors duration-150;
+    border-radius: var(--radius);
   }
 
   .btn-primary {
-    background-color: var(--notion-text);
-    color: var(--notion-bg);
-    @apply btn hover:opacity-80;
+    background-color: hsl(var(--brand));
+    color: hsl(var(--bg));
+    @apply btn;
+  }
+
+  .btn-primary:hover {
+    background-color: hsl(var(--brand) / 0.88);
   }
 
   .btn-secondary {
-    background-color: var(--notion-bg-secondary);
-    color: var(--notion-text);
-    @apply btn hover:bg-opacity-80;
+    background-color: hsl(var(--bg-subtle));
+    color: hsl(var(--fg));
+    @apply btn;
+  }
+
+  .btn-secondary:hover {
+    background-color: hsl(var(--bg-hover));
   }
 
   .card {
-    background-color: var(--notion-bg);
-    border: 1px solid var(--notion-border);
-    @apply rounded-lg p-4 transition-all duration-150;
+    background-color: hsl(var(--bg));
+    border: 1px solid hsl(var(--line));
+    @apply p-4 transition-colors duration-150;
+    border-radius: var(--radius);
   }
 
   .card-hover {
@@ -230,22 +518,158 @@
   }
 
   .card-hover:hover {
-    background-color: var(--notion-bg-secondary);
+    background-color: hsl(var(--bg-subtle));
   }
 
   .tag {
-    background-color: var(--notion-bg-secondary);
-    color: var(--notion-text);
-    @apply inline-flex items-center px-2 py-1 rounded text-sm transition-colors;
+    color: hsl(var(--fg-muted));
+    background-color: hsl(var(--bg-subtle));
+    @apply inline-flex items-center px-2 py-1 text-xs transition-colors;
+    border-radius: var(--radius);
   }
 
   .tag:hover {
-    background-color: var(--notion-bg-hover);
+    background-color: hsl(var(--bg-hover));
+    color: hsl(var(--fg));
   }
 
   .link {
-    color: var(--notion-link);
+    color: hsl(var(--brand));
     @apply hover:underline;
+  }
+
+  /* Horizontal rule used between metadata blocks. */
+  .rule {
+    border: 0;
+    border-top: 1px solid hsl(var(--fg) / 0.15);
+  }
+
+  /* ----------------------------------------------------------------
+     List page chrome, shared by /blog, /categories/* and /tags/*.
+
+     The heading is underlined with a heavy brand rule rather than boxed in a
+     card, which keeps the top of the page quiet and lets the post rows below
+     carry the visual weight.
+  ---------------------------------------------------------------- */
+
+  .list-page {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  /* Closed by a 2px brand rule rather than a hairline: the heading is the one
+     element allowed a heavy line. */
+  .list-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid hsl(var(--brand));
+  }
+
+  .list-head-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    min-width: 0;
+  }
+
+  /* 12px accent square carrying the section's hue, mirroring the reference's
+     per-category colour chip. --chip-h must be a full `H S% L%` triple: a
+     bare hue number resolves to transparent. */
+  .list-chip {
+    display: block;
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    border-radius: 2px;
+    background-color: hsl(var(--chip-h, var(--brand)));
+  }
+
+  .list-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: hsl(var(--fg));
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .list-title {
+      font-size: 1.75rem;
+    }
+  }
+
+  .list-count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--fg-muted));
+  }
+
+  .list-head-link {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--brand));
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .list-head-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Breadcrumbs sit above the heading, muted to stay out of the way. */
+  .list-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    color: hsl(var(--fg-faint));
+  }
+
+  .list-crumbs a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .list-crumbs a:hover {
+    color: hsl(var(--brand));
+  }
+
+  .list-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin: 1.5rem 0 0.25rem;
+  }
+
+  .list-filter-item {
+    padding: 0.3125rem 0.625rem;
+    font-size: 0.8125rem;
+    color: hsl(var(--fg-muted));
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  }
+
+  .list-filter-item:hover {
+    color: hsl(var(--brand));
+    background-color: hsl(var(--bg-subtle));
+    border-color: hsl(var(--brand) / 0.3);
+  }
+
+  .list-filter-item.active {
+    color: hsl(var(--brand));
+    background-color: hsl(var(--brand) / 0.08);
+    border-color: hsl(var(--brand) / 0.3);
   }
 }
 

@@ -1,3 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Geometric M as a path, not text. A CJK glyph falls apart at 16px and a webfont would make the tab icon depend on a download. Stroke weight and leg width are tuned against a 16px render so the counters stay open. -->
+  <rect width="32" height="32" rx="7" fill="#105915"/>
+  <path d="M10.5 23V10L16 17l5.5-7v13" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

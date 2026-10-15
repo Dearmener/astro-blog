@@ -3,10 +3,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="关于 | 孟国庆的博客" description="了解更多关于我的信息">
-  <div class="notion-page-content">
-    <header class="notion-page-header">
-      <div class="notion-page-icon">👋</div>
-      <h1 class="notion-page-title">关于我</h1>
+  <div class="list-page">
+    <nav class="list-crumbs">
+      <a href="/">首页</a>
+      <span>/</span>
+      <span>关于</span>
+    </nav>
+
+    <header class="list-head">
+      <div class="list-head-main">
+        <h1 class="list-title">关于我</h1>
+      </div>
     </header>
 
     <div class="notion-body">
@@ -100,32 +107,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
-  .notion-page-content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
 
-  @media (min-width: 768px) {
-    .notion-page-content {
-      padding: 2rem 4rem;
-    }
-  }
 
-  .notion-page-header {
-    margin-bottom: 2rem;
-  }
 
-  .notion-page-icon {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-  }
 
-  .notion-page-title {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: var(--notion-text);
-  }
 
   .notion-callout {
     display: flex;
@@ -137,7 +122,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .notion-callout-gray {
-    background-color: var(--notion-bg-secondary);
+    background-color: hsl(var(--bg-subtle));
   }
 
   .notion-callout-icon {
@@ -146,12 +131,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .notion-callout-content {
-    color: var(--notion-text);
+    color: hsl(var(--fg));
     line-height: 1.5;
   }
 
   .notion-toggle {
-    border: 1px solid var(--notion-border);
+    border: 1px solid hsl(var(--line));
     border-radius: 0.375rem;
     margin-bottom: 0.5rem;
   }
@@ -162,13 +147,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     font-weight: 500;
-    color: var(--notion-text);
+    color: hsl(var(--fg));
     cursor: pointer;
   }
 
   .notion-toggle-content {
     padding: 0 1rem 0.75rem 2.5rem;
-    color: var(--notion-text-secondary);
+    color: hsl(var(--fg-muted));
     font-size: 0.9375rem;
   }
 
@@ -186,11 +171,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 0.625rem 0.75rem;
     border-radius: 0.375rem;
     transition: background-color 0.1s;
-    color: var(--notion-text);
+    color: hsl(var(--fg));
   }
 
   .notion-link-item:hover {
-    background-color: var(--notion-bg-hover);
+    background-color: hsl(var(--bg-hover));
   }
 
   .notion-link-icon {
@@ -199,7 +184,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     justify-content: center;
     width: 1.5rem;
     height: 1.5rem;
-    color: var(--notion-text-secondary);
+    color: hsl(var(--fg-muted));
   }
 
   .notion-link-text {
@@ -209,6 +194,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .notion-link-url {
     margin-left: auto;
     font-size: 0.875rem;
-    color: var(--notion-text-secondary);
+    color: hsl(var(--fg-muted));
   }
 </style>

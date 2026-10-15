@@ -1,57 +1,35 @@
 ---
 const navLinks = [
-  { href: '/', label: '首页', icon: '🏠' },
-  { href: '/blog', label: '文章', icon: '📝' },
-  { href: '/series', label: '系列', icon: '📚' },
-  { href: '/categories', label: '分类', icon: '📁' },
-  { href: '/tags', label: '标签', icon: '🏷️' },
-  { href: '/about', label: '关于', icon: '👋' },
+  { href: '/', label: '首页' },
+  { href: '/blog', label: '文章' },
+  { href: '/series', label: '系列' },
+  { href: '/categories', label: '分类' },
+  { href: '/tags', label: '标签' },
+  { href: '/about', label: '关于' },
 ];
 
-const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  Astro.url.pathname === href || (href !== '/' && Astro.url.pathname.startsWith(href));
 ---
 
-<header class="notion-header-bar">
-  <nav class="max-w-[900px] mx-auto px-4 md:px-6">
-    <div class="flex items-center justify-between h-11">
-      <a href="/" class="notion-logo">
-        <span class="notion-logo-icon">
-          <span class="logo-avatar">孟</span>
-        </span>
-        <span class="notion-logo-text">孟国庆的博客</span>
+<header class="site-header">
+  <!-- Utility bar: identity on the left, controls on the right. -->
+  <div class="bar">
+    <div class="bar-inner bar-inner--top">
+      <a href="/" class="logo">
+        <span class="logo-mark">孟</span>
+        <span class="logo-word">孟国庆的博客</span>
+        <span class="logo-tagline">记录技术 · 分享生活 · 探索 AI</span>
       </a>
-      
-      <div class="hidden md:flex items-center gap-0.5">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class:list={[
-              'notion-nav-link',
-              (currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))) && 'active'
-            ]}
-          >
-            {link.label}
-          </a>
-        ))}
-      </div>
-      
-      <div class="flex items-center gap-1">
-        <button
-          id="search-btn"
-          class="notion-icon-btn"
-          aria-label="搜索"
-          title="搜索 (⌘K)"
-        >
+
+      <div class="tools">
+        <button id="search-btn" class="tool-btn" aria-label="搜索" title="搜索 (⌘K)">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </button>
-        
-        <button
-          id="theme-toggle"
-          class="notion-icon-btn"
-          aria-label="切换主题"
-        >
+
+        <button id="theme-toggle" class="tool-btn" aria-label="切换主题">
           <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="5" stroke-width="2"/>
             <path stroke-width="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -60,154 +38,202 @@ const currentPath = Astro.url.pathname;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
         </button>
-        
-        <button
-          id="mobile-menu-btn"
-          class="notion-icon-btn md:hidden"
-          aria-label="菜单"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
       </div>
     </div>
-    
-    <div id="mobile-menu" class="hidden md:hidden pb-2">
-      <div class="flex flex-col">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class:list={[
-              'notion-mobile-link',
-              (currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))) && 'active'
-            ]}
-          >
-            <span class="mr-2">{link.icon}</span>
-            {link.label}
-          </a>
-        ))}
-      </div>
+  </div>
+
+  <!-- Nav is the site's one large colour field: a flat brand fill that anchors
+       the palette without any tonal drift across the band. Links wrap instead
+       of collapsing behind a hamburger -- six two-character labels fit a 320px
+       screen comfortably, so a toggle would only have duplicated what is
+       already on screen. -->
+  <nav class="nav-band" aria-label="站点导航">
+    <div class="bar-inner bar-inner--nav">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class:list={['nav-link', isActive(link.href) && 'active']}
+          aria-current={isActive(link.href) ? 'page' : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
     </div>
   </nav>
 </header>
 
 <style>
-  .notion-header-bar {
+  /* Two stacked bars: a card-coloured utility row, then the nav on the flat
+     brand fill. Shared max-width and padding keep the two edges flush. */
+  .site-header {
     position: sticky;
     top: 0;
     z-index: 50;
-    background-color: var(--notion-bg);
-    border-bottom: 1px solid var(--notion-border);
   }
 
-  .notion-logo {
+  .bar {
+    border-bottom: 1px solid hsl(var(--line) / 0.7);
+    background-color: hsl(var(--bg));
+  }
+
+  .bar-inner {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .bar-inner--top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .logo {
     display: flex;
     align-items: center;
     gap: 0.625rem;
-    font-weight: 500;
-    color: var(--notion-text);
     text-decoration: none;
-    transition: opacity 0.15s;
+    min-width: 0;
   }
 
-  .notion-logo:hover {
-    opacity: 0.8;
-  }
-
-  .notion-logo-icon {
+  .logo-mark {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .logo-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.625rem;
-    height: 1.625rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-size: 0.8125rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background-color: hsl(var(--brand));
+    color: #fff;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
     font-weight: 700;
-    border-radius: 0.375rem;
-    letter-spacing: -0.02em;
   }
 
-  :global(.dark) .logo-avatar {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  @media (min-width: 768px) {
+    .logo-mark {
+      width: 2.625rem;
+      height: 2.625rem;
+      font-size: 1.375rem;
+    }
   }
 
-  .notion-logo-text {
-    font-size: 0.9375rem;
+  .logo-word {
+    font-size: 1.375rem;
     font-weight: 600;
-    color: var(--notion-text);
-    letter-spacing: -0.01em;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: hsl(var(--fg));
   }
 
-  .notion-nav-link {
-    padding: 0.375rem 0.625rem;
-    font-size: 0.875rem;
-    color: var(--notion-text-secondary);
-    border-radius: 0.375rem;
-    transition: background-color 0.1s, color 0.1s;
+  @media (min-width: 768px) {
+    .logo-word {
+      font-size: 1.625rem;
+    }
   }
 
-  .notion-nav-link:hover {
-    background-color: var(--notion-bg-hover);
-    color: var(--notion-text);
+  /* Tagline only once there is horizontal room to spare. */
+  .logo-tagline {
+    display: none;
+    font-size: 0.75rem;
+    color: hsl(var(--fg-muted));
   }
 
-  .notion-nav-link.active {
-    background-color: var(--notion-bg-secondary);
-    color: var(--notion-text);
+  @media (min-width: 1024px) {
+    .logo-tagline {
+      display: inline;
+    }
   }
 
-  .notion-icon-btn {
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .tool-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    color: var(--notion-text-secondary);
-    border-radius: 0.375rem;
-    transition: background-color 0.1s;
+    width: 2rem;
+    height: 2rem;
+    color: hsl(var(--fg-muted));
+    border-radius: var(--radius);
+    transition: background-color 0.15s, color 0.15s;
   }
 
-  .notion-icon-btn:hover {
-    background-color: var(--notion-bg-hover);
-    color: var(--notion-text);
+  .tool-btn:hover {
+    background-color: hsl(var(--bg-hover));
+    color: hsl(var(--fg));
   }
 
-  .notion-mobile-link {
+  /* Nav band. Flat brand fill: a gradient across a band this wide made the
+     hue shift read as a dirty seam rather than as depth. */
+  .nav-band {
+    background-color: hsl(var(--brand));
+  }
+
+  /* Wraps instead of collapsing behind a toggle. Six two-character labels
+     need roughly 256px, so they still fit one row at 320px. */
+  .bar-inner--nav {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    color: var(--notion-text-secondary);
-    border-radius: 0.375rem;
-    transition: background-color 0.1s;
+    gap: 0 1.25rem;
   }
 
-  .notion-mobile-link:hover,
-  .notion-mobile-link.active {
-    background-color: var(--notion-bg-secondary);
-    color: var(--notion-text);
+  .nav-link {
+    padding: 0.625rem 0;
+    margin-bottom: -1px;
+    font-size: 0.8125rem;
+    color: rgb(255 255 255 / 0.85);
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .nav-link:hover {
+    color: #fff;
+  }
+
+  .nav-link.active {
+    color: #fff;
+    font-weight: 600;
+    border-bottom-color: rgb(255 255 255 / 0.7);
   }
 </style>
 
 <script>
   const themeToggle = document.getElementById('theme-toggle');
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-  const mobileMenu = document.getElementById('mobile-menu');
-  
+
   themeToggle?.addEventListener('click', () => {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   });
-  
-  mobileMenuBtn?.addEventListener('click', () => {
-    mobileMenu?.classList.toggle('hidden');
-  });
+
+  /* Publish the real header height so sticky elements can offset by it.
+     Measuring beats a hard-coded value: the bar changes height at the logo
+     breakpoint and again whenever the nav wraps on a narrow screen. */
+  const header = document.querySelector<HTMLElement>('.site-header');
+
+  function publishHeaderHeight() {
+    if (!header) return;
+    const h = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--header-h', `${h}px`);
+  }
+
+  publishHeaderHeight();
+
+  if (header && typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(publishHeaderHeight).observe(header);
+  } else {
+    window.addEventListener('resize', publishHeaderHeight);
+  }
 </script>

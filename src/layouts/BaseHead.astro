@@ -94,6 +94,9 @@ const jsonLd = type === 'article' ? {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Numbers, dates and code all sit in the mono stack, so the 52 KB
+         variable font is on the critical path for the first paint. -->
+    <link rel="preload" href="/fonts/PaperMono%5Bwght%5D.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href={canonicalURL} />
     <link rel="sitemap" href="/sitemap-index.xml" />
     

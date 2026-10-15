@@ -1,0 +1,109 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  series: string;
+  currentSlug: string;
+  posts: CollectionEntry<'blog'>[];
+}
+
+const { series, currentSlug, posts } = Astro.props;
+
+const seriesPosts = posts
+  .filter((post) => post.data.series === series)
+  .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0));
+
+const currentIndex = seriesPosts.findIndex((post) => post.id === currentSlug);
+const pct = ((currentIndex + 1) / seriesPosts.length) * 100;
+const seriesHref = `/series/${encodeURIComponent(series)}`;
+---
+
+{currentIndex >= 0 && seriesPosts.length > 1 && (
+  /* Position within the series, not a navigation list. The full ordered
+     outline lives on the series page and prev/next sits at the foot of the
+     article, so repeating all N entries here was pure duplication -- and
+     sitting it beside the in-page TOC blurred two different kinds of
+     navigation. */
+  <div class="series-strip">
+    <a href={seriesHref} class="series-strip-name">{series}</a>
+    <span class="series-strip-count">{currentIndex + 1} / {seriesPosts.length}</span>
+    <div class="series-strip-bar" role="presentation">
+      <span class="series-strip-fill" style={`width: ${pct}%`}></span>
+    </div>
+    <a href={seriesHref} class="series-strip-all">全部篇目 →</a>
+  </div>
+)}
+
+<style>
+  .series-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    background-color: hsl(var(--bg-subtle) / 0.5);
+    border-radius: var(--radius);
+  }
+
+  .series-strip-name {
+    font-weight: 500;
+    color: hsl(var(--fg));
+    text-decoration: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .series-strip-name:hover {
+    color: hsl(var(--brand));
+  }
+
+  .series-strip-count {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: hsl(var(--fg-muted));
+    flex-shrink: 0;
+  }
+
+  .series-strip-bar {
+    flex: 1;
+    min-width: 2rem;
+    height: 3px;
+    background-color: hsl(var(--bg-hover));
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .series-strip-fill {
+    display: block;
+    height: 100%;
+    background-color: hsl(var(--brand));
+    border-radius: 2px;
+  }
+
+  .series-strip-all {
+    flex-shrink: 0;
+    color: hsl(var(--brand));
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .series-strip-all:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* Drop the outline link when the bar would be squeezed to nothing. */
+  @media (max-width: 560px) {
+    .series-strip {
+      flex-wrap: wrap;
+    }
+
+    .series-strip-bar {
+      order: 3;
+      flex-basis: 100%;
+    }
+  }
+</style>

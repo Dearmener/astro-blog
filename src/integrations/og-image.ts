@@ -2,7 +2,9 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import yaml from 'js-yaml';
+import { slug as githubSlug } from 'github-slugger';
 import type { AstroIntegrationLogger } from 'astro';
+import { postHue } from '../utils/series-hue';
 
 interface BuildDonePayload {
   dir: URL;
@@ -47,6 +49,7 @@ export default function ogImageIntegration() {
               category: '',
               tags: ['AI', '机器学习', '深度学习', 'LLM'],
               author: '孟国庆',
+              hue: postHue(undefined),
               isArticle: false,
             },
             ...posts.map((p) => ({
@@ -55,7 +58,11 @@ export default function ogImageIntegration() {
               description: p.description,
               category: p.category,
               tags: p.tags,
+              series: p.series,
               author: '孟国庆',
+              // Same accent the post's list row uses, so the card and the
+              // listing read as one object.
+              hue: postHue(p.series),
               isArticle: true,
             })),
           ],
@@ -103,6 +110,7 @@ interface CollectedPost {
   description: string;
   category: string;
   tags: string[];
+  series?: string;
 }
 
 function collectPosts(root: string): CollectedPost[] {
@@ -129,6 +137,27 @@ function walk(dir: string, onFile: (file: string) => void) {
   }
 }
 
+/**
+ * Reproduce the id Astro's glob loader assigns to a content entry.
+ *
+ * This has to match exactly: BaseHead derives the og:image URL by running
+ * safeSlug() over `post.id`, and generate-og.mjs names the file with the same
+ * safeSlug(). If this function disagrees with Astro on anything -- letter case,
+ * punctuation, a doubled extension -- the two produce different names and the
+ * card 404s while still looking fine locally on a case-insensitive filesystem.
+ *
+ * Mirrors astro/dist/content/utils.js `getContentEntryIdAndSlug`: strip only the
+ * final extension, then github-slugger each path segment.
+ */
+function astroEntryId(relativePath: string): string {
+  const withoutExt = relativePath.replace(/\.[^./\\]+$/, '');
+  return withoutExt
+    .split(/[\\/]/)
+    .map((segment) => githubSlug(segment))
+    .join('/')
+    .replace(/\/index$/, '');
+}
+
 function parsePost(file: string, root: string): CollectedPost | null {
   let raw: string;
   try {
@@ -146,14 +175,13 @@ function parsePost(file: string, root: string): CollectedPost | null {
   }
   if (!fm || typeof fm !== 'object') return null;
   if (fm.draft === true) return null;
-  // Slug: relative path from root, with extension stripped, using OS separator
-  const rel = relative(root, file).replace(/\.(md|mdx)$/i, '');
-  const slug = rel.split(sep).join('/');
+  const rel = relative(root, file);
   return {
-    slug,
+    slug: astroEntryId(rel),
     title: String(fm.title || ''),
     description: String(fm.description || ''),
     category: String(fm.category || '未分类'),
     tags: Array.isArray(fm.tags) ? fm.tags.map(String) : [],
+    series: fm.series ? String(fm.series) : undefined,
   };
 }

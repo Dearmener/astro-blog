@@ -33,14 +33,17 @@ const processedHeadings = headings.map((heading) => {
   };
 });
 
-const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth <= 3);
+/* Sections only, matching the reference's "On this page" list. Including h3
+   put ~25 entries per article (53 in the longest) in a 17rem rail, which then
+   grew taller than the space left above the footer and got pushed up under
+   the header at the end of the page. */
+const filteredHeadings = processedHeadings.filter((h) => h.depth === 2);
 ---
 
 {filteredHeadings.length > 0 && (
   <aside class="toc-sidebar">
     <nav class="toc-container">
       <div class="toc-header">
-        <span class="toc-icon">📑</span>
         <span class="toc-title">目录</span>
       </div>
       <ul class="toc-list">
@@ -56,55 +59,42 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
 )}
 
 <style>
+  /* The rail handles the sticky offset, so this only decides visibility. It used
+     to carry its own `position: sticky; top: 2rem`, which fought the rail's
+     offset and parked the list under the header. */
   .toc-sidebar {
     display: none;
   }
 
-  @media (min-width: 1280px) {
+  @media (min-width: 1024px) {
     .toc-sidebar {
       display: block;
-      position: fixed;
-      top: var(--toc-top, 100px);
-      right: max(calc((100vw - 900px) / 2 - 280px), 20px);
-      width: 240px;
-      max-height: calc(100vh - 140px);
-      overflow-y: auto;
-      z-index: 10;
     }
   }
 
+  /* The rail is unframed: the reference's TOC is a bordered list floating on
+     the page background, not a card. */
   .toc-container {
-    padding: 1rem;
-    background-color: var(--notion-bg);
-    border: 1px solid var(--notion-border);
-    border-radius: 0.5rem;
+    padding: 0;
   }
 
+  /* Section label: tracked small caps, no rule under it. */
   .toc-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--notion-border);
-  }
-
-  .toc-icon {
-    font-size: 0.875rem;
   }
 
   .toc-title {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--notion-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
+    color: hsl(var(--fg-muted));
   }
 
   .toc-list {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0 0 0 1rem;
+    border-left: 1px solid hsl(var(--line));
   }
 
   .toc-item {
@@ -116,37 +106,25 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
     padding-left: 0;
   }
 
-  .toc-depth-3 {
-    padding-left: 0.75rem;
-  }
 
   .toc-link {
     display: block;
-    padding: 0.375rem 0.5rem;
-    margin: 0.125rem -0.5rem;
+    padding: 0.25rem 0;
     font-size: 0.8125rem;
-    line-height: 1.4;
-    color: var(--notion-text-secondary);
-    border-radius: 0.25rem;
-    border-left: 2px solid transparent;
-    transition: all 0.15s ease;
+    line-height: 1.6;
+    color: hsl(var(--fg-muted));
+    transition: color 0.15s;
     text-decoration: none;
   }
 
   .toc-link:hover {
-    color: var(--notion-text);
-    background-color: var(--notion-bg-hover);
+    color: hsl(var(--brand));
   }
 
+  /* Scroll-spy state is carried by colour alone; the rail stays put. */
   .toc-link.active {
-    color: var(--notion-text);
-    background-color: var(--notion-bg-secondary);
-    border-left-color: #2eaadc;
+    color: hsl(var(--fg));
     font-weight: 500;
-  }
-
-  :global(.dark) .toc-link.active {
-    border-left-color: #529cca;
   }
 
   .toc-sidebar::-webkit-scrollbar {
@@ -158,7 +136,7 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
   }
 
   .toc-sidebar::-webkit-scrollbar-thumb {
-    background-color: var(--notion-border);
+    background-color: hsl(var(--line));
     border-radius: 2px;
   }
 
@@ -185,9 +163,6 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
     
     if (tocLinks.length === 0 || !tocSidebar) return;
 
-    // 找到正文内容的起始位置
-    const notionContent = document.querySelector<HTMLElement>('.notion-content');
-    
     tocLinks.forEach((link) => {
       const slug = link.dataset.slug;
       if (slug) {
@@ -199,24 +174,6 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
     });
 
     if (headingElements.length === 0) return;
-
-    const fixedTop = 100; // TOC 固定时距离顶部的距离
-
-    function updateTocPosition() {
-      if (!notionContent || !tocSidebar) return;
-      
-      const contentRect = notionContent.getBoundingClientRect();
-      
-      // 当 .notion-content 顶部还在视口下方时，TOC 跟随内容
-      // 当 .notion-content 顶部滚动到 fixedTop 以上时，TOC 固定
-      if (contentRect.top > fixedTop) {
-        // 内容还没滚动到位，TOC 跟随内容顶部
-        tocSidebar.style.setProperty('--toc-top', `${contentRect.top}px`);
-      } else {
-        // 内容已滚动，TOC 固定在 fixedTop
-        tocSidebar.style.setProperty('--toc-top', `${fixedTop}px`);
-      }
-    }
 
     function highlightToc() {
       const scrollTop = window.scrollY;
@@ -261,8 +218,7 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
     window.addEventListener('scroll', () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          updateTocPosition();
-          highlightToc();
+                highlightToc();
           ticking = false;
         });
         ticking = true;
@@ -270,7 +226,6 @@ const filteredHeadings = processedHeadings.filter((h) => h.depth >= 2 && h.depth
     });
 
     // 初始化
-    updateTocPosition();
     highlightToc();
 
     tocLinks.forEach((link) => {
